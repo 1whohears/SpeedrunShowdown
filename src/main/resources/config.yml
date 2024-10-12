@@ -40,3 +40,4 @@ teams:
   netherite: "DARK_GRAY"
   chorus: "DARK_PURPLE"
   obsidian: "BLACK"
+unlock_locate_nether_time: 480 # seconds

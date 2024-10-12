@@ -37,7 +37,18 @@ commands:
     description: Declare the winning team
     permission: speedrunshowdown
     usage: /win (team|player)
+  locatefortress:
+    description: Get the coordinates of the nearest nether fortress
+    permission: netherlocate
+    usage: /locatefortress
+  locatebastion:
+    description: Get the coordinates of the nearest nether bastion
+    permission: netherlocate
+    usage: /locatebastion
 permissions:
   speedrunshowdown:
     description: Allows speedrunshowdown commands
     default: op
+  netherlocate:
+    description: Allows the use of nether structure locate commands
+    default: true

@@ -1,11 +1,11 @@
 package com.github.speedrunshowdown;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
+import com.github.speedrunshowdown.commands.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -25,6 +25,7 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Firework;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -33,17 +34,12 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.scoreboard.Criteria;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Team;
 
 import com.github.speedrunshowdown.border.WorldBorderManager;
-import com.github.speedrunshowdown.commands.ConfigCommand;
-import com.github.speedrunshowdown.commands.GiveArmorCommand;
-import com.github.speedrunshowdown.commands.GiveCompassCommand;
-import com.github.speedrunshowdown.commands.ResumeCommand;
-import com.github.speedrunshowdown.commands.StartCommand;
-import com.github.speedrunshowdown.commands.StopCommand;
-import com.github.speedrunshowdown.commands.SuddenDeathCommand;
-import com.github.speedrunshowdown.commands.WinCommand;
 import com.github.speedrunshowdown.gui.ScoreboardManager;
 import com.github.speedrunshowdown.listeners.AdvancementListener;
 import com.github.speedrunshowdown.listeners.BedUseListener;
@@ -73,8 +69,19 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
+    private String level_name = "world";
+
     @Override
     public void onEnable() {
+        // Get the level name
+        Properties props = new Properties();
+        try {
+            props.load(Files.newInputStream(Paths.get("server.properties")));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        level_name = props.getProperty("level-name");
+
         // Save default config, fails silently if config already exists
         saveDefaultConfig();
 
@@ -87,6 +94,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("givecompass").setExecutor(new GiveCompassCommand());
         getCommand("givearmor").setExecutor(new GiveArmorCommand());
         getCommand("win").setExecutor(new WinCommand());
+        getCommand("locatefortress").setExecutor(new LocStrucCommand(Structure.FORTRESS, "Nether Fortress"));
+        getCommand("locatebastion").setExecutor(new LocStrucCommand(Structure.BASTION_REMNANT, "Bastion Remnant"));
 
         // Create listeners
         getServer().getPluginManager().registerEvents(new AdvancementListener(), this);
@@ -109,6 +118,17 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             scoreboardManager = new ScoreboardManager();
             worldBorderManager = new WorldBorderManager();
         });
+        getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
+            // Set player gamemode to adventure if the game hasn't started yet
+            if (!running) {
+                for (Player player : getServer().getOnlinePlayers()) {
+                    if (player.getGameMode() == GameMode.SURVIVAL) {
+                        player.setGameMode(GameMode.ADVENTURE);
+                    }
+                }
+                getOverworld().setTime(6000);
+            }
+        }, 20, 20);
     }
 
     @Override
@@ -116,10 +136,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         // Check if any players in survival are in the end
         boolean playerInEnd = false;
         for (Player player : getServer().getOnlinePlayers()) {
-            if (
-                player.getGameMode() == GameMode.SURVIVAL &&
-                player.getLocation().getWorld().getEnvironment() == Environment.THE_END
-            ) {
+            if (player.getGameMode() == GameMode.SURVIVAL &&
+                    player.getLocation().getWorld().getEnvironment() == Environment.THE_END) {
                 playerInEnd = true;
             }
         }
@@ -147,6 +165,19 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                         }
                     }
                 }
+
+                // Update nether timer to get locate fortress/bastian command perm
+                int unlock_locate_nether_time = getConfig().getInt("unlock_locate_nether_time",480);
+                for (Player player : getServer().getOnlinePlayers()) {
+                    if (player.getWorld().getEnvironment() == Environment.NETHER) {
+                        Objective objective = player.getScoreboard().getObjective("nether_time");
+                        if (objective != null) {
+                            Score score = objective.getScore(player.getName());
+                            int t = Math.min(score.getScore()+1, unlock_locate_nether_time);
+                            score.setScore(t);
+                        }
+                    }
+                }
             }
         }
 
@@ -155,7 +186,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Do sudden death things
         if (suddenDeath) {
-            World end = getServer().getWorld("world_the_end");
+            World end = getTheEnd();
 
             // If plugin should lower dragon health and has not already lowered dragon health, lower dragon health
             if (getConfig().getBoolean("lower-dragon-health-in-sudden-death") && !loweredDragonHealthInSuddenDeath) {
@@ -193,6 +224,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             getServer().broadcastMessage(ChatColor.YELLOW + "Game already running");
             return;
         }
+        // Reset Sun
+        getOverworld().setTime(1000);
 
         // Reset timer
         timer = getConfig().getInt("sudden-death-time") * 60;
@@ -216,13 +249,26 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         worldBorderManager.init();
 
         // Set time to 0
-        getServer().getWorld("world").setTime(0);
+        getOverworld().setTime(0);
 
         // Randomize drops
         randomize();
 
+        // Create nether_time objective
+        scoreboardManager.getScoreboard().registerNewObjective("nether_time", Criteria.DUMMY, "Nether Time");
+
         // For every player
         for (Player player : getServer().getOnlinePlayers()) {
+            // Reset nether_time score
+            Objective nto = player.getScoreboard().getObjective("nether_time");
+            if (nto != null) {
+                Score score = nto.getScore(player.getName());
+                score.setScore(0);
+            }
+
+            // Set gamemode to survival if in adventure
+            player.setGameMode(GameMode.SURVIVAL);
+
             // Clear inventory
             player.getInventory().clear();
 
@@ -248,6 +294,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             // Give players full health and food
             player.setHealth(20);
             player.setFoodLevel(20);
+            player.setSaturation(5);
 
             // Clear all potion effects
             for (PotionEffect potionEffect : player.getActivePotionEffects()) {
@@ -374,7 +421,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
 
         // Get the end
-        World end = getServer().getWorld("world_the_end");
+        World end = getTheEnd();
 
         // Teleport spectators to the middle
         for (Player spectator : spectators) {
@@ -487,7 +534,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
 
         // Make fireworks!
-        World world = getServer().getWorld("world_the_end");
+        World world = getTheEnd();
         int spawnRange = 80;
         Color color = (team != null) ? chatColorToColor(team.getColor()) : Color.WHITE;
 
@@ -612,5 +659,15 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public static SpeedrunShowdown getInstance() {
         return (SpeedrunShowdown) Bukkit.getPluginManager().getPlugin("SpeedrunShowdown");
+    }
+
+    public World getTheEnd() {
+        // iterate through getServer.getWorlds() ?
+        // world.getEnvironment() == Environment.THE_END
+        return getServer().getWorld(level_name+"_the_end");
+    }
+
+    public World getOverworld() {
+        return getServer().getWorld(level_name);
     }
 }

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import com.github.speedrunshowdown.Constants;
 import com.github.speedrunshowdown.SpeedrunShowdown;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
@@ -83,7 +83,7 @@ public class PlayerDeathListener implements Listener {
                             plugin.getServer().broadcastMessage("");
                             plugin.getServer().broadcastMessage(
                                 "" + ChatColor.WHITE + ChatColor.BOLD + "TEAM ELIMINATED > " +
-                                team.getColor() + " Team " + WordUtils.capitalize(team.getName()) +
+                                team.getColor() + " Team " + StringUtils.capitalize(team.getName()) +
                                 ChatColor.RED + " has been eliminated!"
                             );
                             plugin.getServer().broadcastMessage("");

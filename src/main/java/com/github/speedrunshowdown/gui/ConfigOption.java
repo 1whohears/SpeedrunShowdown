@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 
 import com.github.speedrunshowdown.SpeedrunShowdown;
 
-import org.apache.commons.lang.WordUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -140,7 +140,7 @@ public enum ConfigOption {
 	}
 
 	ConfigOption(String path, Material material, String suffix) {
-		this(path, WordUtils.capitalize(path.replace('-', ' ')), material, suffix);
+		this(path, StringUtils.capitalize(path.replace('-', ' ')), material, suffix);
 	}
 
 	ConfigOption(String path, Material material) {

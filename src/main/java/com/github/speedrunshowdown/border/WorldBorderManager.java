@@ -7,8 +7,8 @@ import com.github.speedrunshowdown.SpeedrunShowdown;
 
 public class WorldBorderManager implements Runnable {
     private static final int PREGAME_BORDER_SIZE = 32; // blocks
-    private static final int OVERWORLD_BORDER_SIZE = 6000; // blocks
-    private static final int NETHER_BORDER_SIZE = OVERWORLD_BORDER_SIZE / 8; // blocks
+    public static final int NETHER_BORDER_SIZE = 1000; // SHOULD BE AT LEAST 1000 BECAUSE FORTRESS QUADRANTS
+    private static final int OVERWORLD_BORDER_SIZE = NETHER_BORDER_SIZE * 8; // blocks
     private static final int END_BORDER_SIZE = 1000; // blocks
 
     private SpeedrunShowdown plugin;
@@ -28,7 +28,7 @@ public class WorldBorderManager implements Runnable {
         endBorder.setSize(END_BORDER_SIZE);
 
         // Move border to spawn location
-        overworldBorder.setCenter(plugin.getServer().getWorld("world").getSpawnLocation());
+        overworldBorder.setCenter(plugin.getOverworld().getSpawnLocation());
 
         // Schedule repeating task
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this, 20, 20);
