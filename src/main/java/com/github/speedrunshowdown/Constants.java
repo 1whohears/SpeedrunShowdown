@@ -667,20 +667,12 @@ public class Constants {
 		Material.DARK_OAK_SIGN,
 		Material.CRIMSON_SIGN,
 		Material.WARPED_SIGN,
-		Material.BUCKET,
-		Material.WATER_BUCKET,
-		Material.LAVA_BUCKET,
 		Material.MINECART,
 		Material.SADDLE,
 		Material.REDSTONE,
 		Material.SNOWBALL,
 		Material.OAK_BOAT,
 		Material.LEATHER,
-		Material.MILK_BUCKET,
-		Material.PUFFERFISH_BUCKET,
-		Material.SALMON_BUCKET,
-		Material.COD_BUCKET,
-		Material.TROPICAL_FISH_BUCKET,
 		Material.BRICK,
 		Material.CLAY_BALL,
 		Material.DRIED_KELP_BLOCK,
@@ -981,7 +973,13 @@ public class Constants {
 		Material.POLISHED_BLACKSTONE_BRICK_SLAB,
 		Material.POLISHED_BLACKSTONE_BRICK_STAIRS,
 		Material.CRACKED_POLISHED_BLACKSTONE_BRICKS,
-		Material.RESPAWN_ANCHOR
+		Material.RESPAWN_ANCHOR,
+			Material.LAVA_BUCKET,
+			Material.MILK_BUCKET,
+			Material.PUFFERFISH_BUCKET,
+			Material.SALMON_BUCKET,
+			Material.COD_BUCKET,
+			Material.TROPICAL_FISH_BUCKET,
     };
 
     public static final Material[] PERSISTENT_TOOLS = {
@@ -1022,6 +1020,8 @@ public class Constants {
 		Material.TRIDENT,
 		Material.SHEARS,
 		Material.FISHING_ROD,
+			Material.BUCKET,
+			Material.WATER_BUCKET,
 	};
 
     public static final Material[] EFFICIENT_TOOLS = {
