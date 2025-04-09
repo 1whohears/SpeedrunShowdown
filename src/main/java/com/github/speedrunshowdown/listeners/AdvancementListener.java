@@ -1,9 +1,12 @@
 package com.github.speedrunshowdown.listeners;
 
+import com.github.speedrunshowdown.Constants;
 import com.github.speedrunshowdown.SpeedrunShowdown;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
+import org.bukkit.NamespacedKey;
+import org.bukkit.advancement.Advancement;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerAdvancementDoneEvent;
@@ -33,6 +36,8 @@ public class AdvancementListener implements Listener {
                     event.getPlayer().getWorld().setGameRule(GameRule.ANNOUNCE_ADVANCEMENTS, announceAdvancements);
                 }, 1L);
             }
+
+            plugin.getProgressionPointManager().onAdvancement(event.getAdvancement(), event.getPlayer());
         }
     }
 

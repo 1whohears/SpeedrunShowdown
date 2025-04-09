@@ -1081,4 +1081,19 @@ public class Constants {
 		FOOD_RECIPES.put(Material.COD, Material.COOKED_COD);
 		FOOD_RECIPES.put(Material.SALMON, Material.COOKED_SALMON);
 	}
+
+	public static final String[] PROGRESSION_POINTS = {
+			"minecraft:adventure/trade",
+			"minecraft:nether/find_fortress",
+			"minecraft:story/enter_the_nether",
+			"minecraft:story/follow_ender_eye",
+			"minecraft:story/form_obsidian",
+			"minecraft:story/mine_diamond",
+			"minecraft:nether/explore_nether",
+			"minecraft:nether/find_bastion",
+			"minecraft:nether/distract_piglin",
+			"minecraft:husbandry/tame_an_animal",
+			"minecraft:nether/obtain_ancient_debris",
+			"minecraft:nether/all_effects"
+	};
 }

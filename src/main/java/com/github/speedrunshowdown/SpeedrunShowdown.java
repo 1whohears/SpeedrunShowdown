@@ -66,6 +66,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     private ScoreboardManager scoreboardManager;
     private WorldBorderManager worldBorderManager;
+    private ProgressionPointsManager progressionPointsManager;
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
@@ -117,6 +118,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             scoreboardManager = new ScoreboardManager();
             worldBorderManager = new WorldBorderManager();
+            progressionPointsManager = new ProgressionPointsManager();
         });
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             // Set player gamemode to adventure if the game hasn't started yet
@@ -247,6 +249,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Init world border
         worldBorderManager.init();
+
+        progressionPointsManager.init();
 
         // Set time to 0
         getOverworld().setTime(0);
@@ -559,6 +563,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             );
             firework.setFireworkMeta(fireworkMeta);
         }
+
+        progressionPointsManager.onGameEnd();
     }
 
     public void randomize() {
@@ -669,5 +675,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public World getOverworld() {
         return getServer().getWorld(level_name);
+    }
+
+    public ProgressionPointsManager getProgressionPointManager() {
+        return progressionPointsManager;
     }
 }
