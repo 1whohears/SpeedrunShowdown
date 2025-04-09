@@ -1,5 +1,6 @@
 package com.github.speedrunshowdown;
 
+import org.bukkit.Sound;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
@@ -39,6 +40,9 @@ public class ProgressionPointsManager {
         pointTeamMap.put(key, teamName);
         int points = getNumPoints(teamName);
         plugin.getServer().broadcastMessage("Team "+teamName+" now has "+points+" Progression Points!");
+        plugin.getServer().getOnlinePlayers().forEach(p -> {
+            p.playSound(p.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+        });
     }
 
     public int getNumPoints(@Nonnull String teamName) {
