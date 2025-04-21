@@ -6,6 +6,7 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import com.github.speedrunshowdown.commands.*;
+import com.github.speedrunshowdown.listeners.*;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Color;
@@ -41,20 +42,6 @@ import org.bukkit.scoreboard.Team;
 
 import com.github.speedrunshowdown.border.WorldBorderManager;
 import com.github.speedrunshowdown.gui.ScoreboardManager;
-import com.github.speedrunshowdown.listeners.AdvancementListener;
-import com.github.speedrunshowdown.listeners.BedUseListener;
-import com.github.speedrunshowdown.listeners.BlockDamageListener;
-import com.github.speedrunshowdown.listeners.BlockDropItemListener;
-import com.github.speedrunshowdown.listeners.CompassUseListener;
-import com.github.speedrunshowdown.listeners.DragonKillListener;
-import com.github.speedrunshowdown.listeners.FoodDropListener;
-import com.github.speedrunshowdown.listeners.GUIClickListener;
-import com.github.speedrunshowdown.listeners.PlayerChangedWorldListener;
-import com.github.speedrunshowdown.listeners.PlayerDeathListener;
-import com.github.speedrunshowdown.listeners.PlayerRespawnListener;
-import com.github.speedrunshowdown.listeners.PortalEnterListener;
-import com.github.speedrunshowdown.listeners.RespawnAnchorUseListener;
-import com.github.speedrunshowdown.listeners.ToolUseListener;
 
 public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private boolean running = false;
@@ -113,6 +100,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new PortalEnterListener(), this);
         getServer().getPluginManager().registerEvents(new RespawnAnchorUseListener(), this);
         getServer().getPluginManager().registerEvents(new ToolUseListener(), this);
+        getServer().getPluginManager().registerEvents(new CreatureSpawnListener(), this);
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
