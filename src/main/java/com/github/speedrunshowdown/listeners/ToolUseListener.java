@@ -26,8 +26,8 @@ public class ToolUseListener implements Listener {
 
             // If item is a tool, enchant with efficiency 3 and unbreaking 1
             if (isEfficientTool(item.getType())) {
-                item.addEnchantment(Enchantment.DIG_SPEED, 3);
-                item.addEnchantment(Enchantment.DURABILITY, 1);
+                item.addEnchantment(Enchantment.EFFICIENCY, 3);
+                item.addEnchantment(Enchantment.UNBREAKING, 1);
             }
         }
     }

@@ -97,7 +97,13 @@ public class Constants {
 		Material.DETECTOR_RAIL,
 		Material.STICKY_PISTON,
 		Material.COBWEB,
-		Material.GRASS,
+		Material.GRASS_BLOCK,
+			Material.SHORT_DRY_GRASS,
+			Material.TALL_DRY_GRASS,
+			Material.SHORT_GRASS,
+			Material.TALL_GRASS,
+			Material.SEAGRASS,
+			Material.TALL_SEAGRASS,
 		Material.FERN,
 		Material.DEAD_BUSH,
 		Material.SEAGRASS,
@@ -578,7 +584,8 @@ public class Constants {
 		// Material.STRUCTURE_BLOCK,
 		// Material.JIGSAW,
 		Material.TURTLE_HELMET,
-		Material.SCUTE,
+		Material.ARMADILLO_SCUTE,
+			Material.TURTLE_SCUTE,
 		Material.IRON_SHOVEL,
 		Material.IRON_PICKAXE,
 		Material.IRON_AXE,
@@ -1070,7 +1077,7 @@ public class Constants {
 		Material.BLACK_BED
 	};
 
-	public static final HashMap<Material, Material> FOOD_RECIPES;
+	public static HashMap<Material, Material> FOOD_RECIPES;
 	static {
 		FOOD_RECIPES = new HashMap<>();
 		FOOD_RECIPES.put(Material.BEEF, Material.COOKED_BEEF);

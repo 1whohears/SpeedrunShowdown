@@ -37,7 +37,7 @@ public class PlayerRespawnListener implements Listener {
             // Give resistance
             plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                 player.getPlayer().addPotionEffect(new PotionEffect(
-                    PotionEffectType.DAMAGE_RESISTANCE,
+                    PotionEffectType.RESISTANCE,
                     plugin.getConfig().getInt("respawn-invincibility") * 20,
                     255
                 ));

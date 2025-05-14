@@ -295,7 +295,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
             // Give resistance
             player.addPotionEffect(new PotionEffect(
-                PotionEffectType.DAMAGE_RESISTANCE,
+                PotionEffectType.RESISTANCE,
                 getConfig().getInt("grace-period") * 20,
                 255
             ));
@@ -380,7 +380,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
             // Give resistance
             player.addPotionEffect(new PotionEffect(
-                PotionEffectType.DAMAGE_RESISTANCE,
+                PotionEffectType.RESISTANCE,
                 getConfig().getInt("portal-invincibility") * 20,
                 255
             ));
@@ -537,7 +537,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 70,
                 (Math.random() - 0.5) * spawnRange
             );
-            Firework firework = (Firework) world.spawnEntity(location, EntityType.FIREWORK);
+            Firework firework = (Firework) world.spawnEntity(location, EntityType.FIREWORK_ROCKET);
             FireworkMeta fireworkMeta = firework.getFireworkMeta();
             fireworkMeta.setPower(((int) (Math.random() * 3)) + 1); // 1, 2, or 3
             fireworkMeta.addEffect(
