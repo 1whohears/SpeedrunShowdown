@@ -1,7 +1,7 @@
 package com.github.speedrunshowdown;
 
 import net.kyori.adventure.text.Component;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.format.TextColor;
 import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.advancement.Advancement;
@@ -11,9 +11,7 @@ import org.bukkit.scoreboard.Team;
 
 import javax.annotation.Nonnull;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class ProgressionPointsManager {
 
@@ -64,19 +62,20 @@ public class ProgressionPointsManager {
 
     public void listAll(CommandSender sender) {
         for (String k : Constants.PROGRESSION_POINTS) {
-            String color = ChatColor.WHITE+"";
-            String teamName = "";
+            TextColor color = TextColor.color(0xFFFFFF);
+            Component teamName = Component.empty();
             if (pointTeamMap.containsKey(k)) {
                 String teamId = pointTeamMap.get(k);
                 Team team = plugin.getScoreboardManager().getScoreboard().getTeam(teamId);
                 if (team != null) {
-                    color = team.getColor() + "";
-                    teamName = team.displayName().toString();
+                    color = team.color();
+                    teamName = team.displayName();
                 } else {
-                    teamName = teamId;
+                    teamName = Component.text(teamId);
                 }
             }
-            sender.sendMessage(color+" "+getAdvancementTitleComponent(k).toString()+" "+teamName);
+            sender.sendMessage(getAdvancementTitleComponent(k).color(color)
+                    .append(Component.text(" ")).append(teamName));
         }
     }
 
@@ -84,7 +83,7 @@ public class ProgressionPointsManager {
         NamespacedKey key = NamespacedKey.fromString(keyString);
         if (key == null) return Component.text(keyString); // fallback
 
-        String translationKey = "advancements." + key.getNamespace() + "." + key.getKey().replace('/', '.') + ".title";
+        String translationKey = "advancements." + key.getKey().replace('/', '.') + ".title";
         return Component.translatable(translationKey);
     }
 }

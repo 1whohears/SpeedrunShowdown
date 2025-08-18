@@ -14,7 +14,7 @@ public class VerifyNetherStructuresCommand implements CommandExecutor {
             commandSender.sendMessage(ChatColor.GREEN+"The Nether has at least 1 Fortress and at least 1 Bastian " +
                     "inside the world border!");
         } else {
-            commandSender.sendMessage(ChatColor.RED+"The Nether is missing a required Structure! " +
+            commandSender.sendMessage(ChatColor.LIGHT_PURPLE+"The Nether is missing a required Structure! " +
                     "Please use a different seed!");
         }
         return false;

@@ -24,7 +24,7 @@ public class StartCommand implements CommandExecutor {
         // Else, schedule tasks to show titles to players
         else {
             if (!verifyNetherStructures()) {
-                plugin.getServer().broadcastMessage(ChatColor.RED+"The Nether is missing a required Structure! " +
+                plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"The Nether is missing a required Structure! " +
                         "Please use a different seed!");
                 return true;
             }
