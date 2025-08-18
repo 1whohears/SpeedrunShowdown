@@ -45,6 +45,10 @@ commands:
     description: Get the coordinates of the nearest nether bastion
     permission: netherlocate
     usage: /locatebastion
+  checknether:
+    description: Check if a Fortress/Bastian is present in the nether inside the world boarder.
+    permission: speedrunshowdown
+    usage: /checknether
 permissions:
   speedrunshowdown:
     description: Allows speedrunshowdown commands

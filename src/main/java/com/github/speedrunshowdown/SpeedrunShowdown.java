@@ -84,6 +84,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("win").setExecutor(new WinCommand());
         getCommand("locatefortress").setExecutor(new LocStrucCommand(Structure.FORTRESS, "Nether Fortress"));
         getCommand("locatebastion").setExecutor(new LocStrucCommand(Structure.BASTION_REMNANT, "Bastion Remnant"));
+        getCommand("checknether").setExecutor(new VerifyNetherStructuresCommand());
 
         // Create listeners
         getServer().getPluginManager().registerEvents(new AdvancementListener(), this);
@@ -659,6 +660,10 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         // iterate through getServer.getWorlds() ?
         // world.getEnvironment() == Environment.THE_END
         return getServer().getWorld(level_name+"_the_end");
+    }
+
+    public World getTheNether() {
+        return getServer().getWorld(level_name+"_nether");
     }
 
     public World getOverworld() {

@@ -13,6 +13,7 @@ import org.bukkit.generator.structure.Structure;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.util.StructureSearchResult;
+import org.jetbrains.annotations.Nullable;
 
 public class LocStrucCommand implements CommandExecutor {
 
@@ -56,19 +57,7 @@ public class LocStrucCommand implements CommandExecutor {
         // for some reason locateNearestStructure gives different results every time
         // and the boolean flag also gives different results
         // so this min sort loop is needed to find the actual closest bastion within a world border
-        boolean worldbordercheck = SpeedrunShowdown.getInstance().getConfig().getBoolean("world-border");
-        StructureSearchResult result = findStructure(player, player.getLocation(), worldbordercheck);
-        if (result == null && worldbordercheck) {
-            // if nothing was found still, look for structures from different locations
-            // cause apparently that also makes different results
-            result = findStructure(player, new Location(player.getWorld(), 184, 60, 184), true);
-            if (result == null)
-                result = findStructure(player, new Location(player.getWorld(), -248, 60, -248), true);
-            if (result == null)
-                result = findStructure(player, new Location(player.getWorld(), 184, 60, -248), true);
-            if (result == null)
-                result = findStructure(player, new Location(player.getWorld(), -248, 60, 184), true);
-        }
+        StructureSearchResult result = multiFindStructure(player, structure);
         if (result == null) {
             player.sendMessage(ChatColor.RED + "No "+structure_name+"s were Found Inside the World Border.");
             return true;
@@ -79,28 +68,60 @@ public class LocStrucCommand implements CommandExecutor {
                 +(int)result.getLocation().distance(player.getLocation())+" Blocks Away!");
         return true;
     }
-    private boolean checkInWorldBorder(Location location) {
+    @Nullable
+    public static StructureSearchResult multiFindStructure(Player player, Structure structure) {
+        return multiFindStructure(player.getWorld(), player.getLocation(), structure);
+    }
+    @Nullable
+    public static StructureSearchResult multiFindStructure(World world, Location playerLocation, Structure structure) {
+        boolean worldbordercheck = SpeedrunShowdown.getInstance().getConfig().getBoolean("world-border");
+        StructureSearchResult result = findStructure(world, playerLocation, playerLocation, worldbordercheck, structure);
+        if (result == null && worldbordercheck) {
+            // if nothing was found still, look for structures from different locations
+            // cause apparently that also makes different results
+            result = findStructure(world, playerLocation, new Location(world,
+                    184, 60, 184), true, structure);
+            if (result == null)
+                result = findStructure(world, playerLocation, new Location(world,
+                        -248, 60, -248), true, structure);
+            if (result == null)
+                result = findStructure(world, playerLocation, new Location(world,
+                        184, 60, -248), true, structure);
+            if (result == null)
+                result = findStructure(world, playerLocation, new Location(world,
+                        -248, 60, 184), true, structure);
+        }
+        return result;
+    }
+    public static boolean checkInWorldBorder(Location location) {
         int radius = WorldBorderManager.NETHER_BORDER_SIZE / 2;
         return location.getX() < radius && location.getX() > -radius &&
                 location.getZ() < radius && location.getZ() > -radius;
     }
-    private StructureSearchResult findStructure(Player player, Location lookPos, boolean worldbordercheck) {
+    @Nullable
+    public static StructureSearchResult findStructure(Player player, Location lookPos,
+                                                      boolean worldbordercheck, Structure structure) {
+        return findStructure(player.getWorld(), player.getLocation(), lookPos, worldbordercheck, structure);
+    }
+    @Nullable
+    public static StructureSearchResult findStructure(World world, Location playerLoc, Location lookPos,
+                                                      boolean worldbordercheck, Structure structure) {
         StructureSearchResult result = null;
         double mindist = Double.MAX_VALUE;
         for (int i = 0; i < 10; ++i) {
-            StructureSearchResult r1 = player.getWorld().locateNearestStructure(
+            StructureSearchResult r1 = world.locateNearestStructure(
                     lookPos, structure, CHUNKS_TO_CHECK, true);
             if (r1 != null) {
-                double d = r1.getLocation().distanceSquared(player.getLocation());
+                double d = r1.getLocation().distanceSquared(playerLoc);
                 if (d < mindist && (!worldbordercheck || checkInWorldBorder(r1.getLocation()))) {
                     result = r1;
                     mindist = d;
                 }
             }
-            StructureSearchResult r2 = player.getWorld().locateNearestStructure(
+            StructureSearchResult r2 = world.locateNearestStructure(
                     lookPos, structure, CHUNKS_TO_CHECK, false);
             if (r2 != null) {
-                double d = r2.getLocation().distanceSquared(player.getLocation());
+                double d = r2.getLocation().distanceSquared(playerLoc);
                 if (d < mindist && (!worldbordercheck || checkInWorldBorder(r2.getLocation()))) {
                     result = r2;
                     mindist = d;
