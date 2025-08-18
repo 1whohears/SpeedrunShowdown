@@ -75,7 +75,7 @@ public class ProgressionPointsManager {
                 }
             }
             sender.sendMessage(getAdvancementTitleComponent(k).color(color)
-                    .append(Component.text(" ")).append(teamName));
+                    .append(Component.text(" | ")).append(teamName));
         }
     }
 
