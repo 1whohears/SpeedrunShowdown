@@ -1,7 +1,11 @@
 package com.github.speedrunshowdown;
 
+import net.kyori.adventure.text.Component;
+import org.bukkit.ChatColor;
+import org.bukkit.NamespacedKey;
 import org.bukkit.Sound;
 import org.bukkit.advancement.Advancement;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
@@ -52,10 +56,35 @@ public class ProgressionPointsManager {
     }
 
     public void onGameEnd() {
-        Set<String> teamNames = new HashSet<>(pointTeamMap.values());
-        for (String tn : teamNames) {
+        for (String tn : pointTeamMap.values()) {
             int points = getNumPoints(tn);
             plugin.getServer().broadcastMessage("Team "+tn+" has "+points+" Progression Points!");
         }
+    }
+
+    public void listAll(CommandSender sender) {
+        for (String k : Constants.PROGRESSION_POINTS) {
+            String color = ChatColor.WHITE+"";
+            String teamName = "";
+            if (pointTeamMap.containsKey(k)) {
+                String teamId = pointTeamMap.get(k);
+                Team team = plugin.getScoreboardManager().getScoreboard().getTeam(teamId);
+                if (team != null) {
+                    color = team.getColor() + "";
+                    teamName = team.displayName().toString();
+                } else {
+                    teamName = teamId;
+                }
+            }
+            sender.sendMessage(color+" "+getAdvancementTitleComponent(k).toString()+" "+teamName);
+        }
+    }
+
+    public static Component getAdvancementTitleComponent(String keyString) {
+        NamespacedKey key = NamespacedKey.fromString(keyString);
+        if (key == null) return Component.text(keyString); // fallback
+
+        String translationKey = "advancements." + key.getNamespace() + "." + key.getKey().replace('/', '.') + ".title";
+        return Component.translatable(translationKey);
     }
 }

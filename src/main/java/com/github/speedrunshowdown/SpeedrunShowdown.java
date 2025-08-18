@@ -85,6 +85,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("locatefortress").setExecutor(new LocStrucCommand(Structure.FORTRESS, "Nether Fortress"));
         getCommand("locatebastion").setExecutor(new LocStrucCommand(Structure.BASTION_REMNANT, "Bastion Remnant"));
         getCommand("checknether").setExecutor(new VerifyNetherStructuresCommand());
+        getCommand("listprogressionpoints").setExecutor(new ProgressionPoints());
 
         // Create listeners
         getServer().getPluginManager().registerEvents(new AdvancementListener(), this);

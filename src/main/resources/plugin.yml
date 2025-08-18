@@ -49,6 +49,10 @@ commands:
     description: Check if a Fortress/Bastian is present in the nether inside the world boarder.
     permission: speedrunshowdown
     usage: /checknether
+  listprogressionpoints:
+    description: See a list of progression points. Who has what, and what is left.
+    permission: netherlocate
+    usage: /listprogressionpoints
 permissions:
   speedrunshowdown:
     description: Allows speedrunshowdown commands
