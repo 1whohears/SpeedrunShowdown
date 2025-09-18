@@ -15,8 +15,6 @@ import com.github.speedrunshowdown.SpeedrunShowdown;
 
 public class BedUseListener implements Listener {
 
-    public static final double ALLOW_BED_EXP_RADIUS = 8;
-
     @EventHandler
     public void onBedUse(PlayerInteractEvent event) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
@@ -37,7 +35,7 @@ public class BedUseListener implements Listener {
                 Block block = event.getClickedBlock();
                 if (block == null) return;
                 Location center = new Location(block.getWorld(), 0, block.getY(), 0);
-                if (block.getLocation().distance(center) > ALLOW_BED_EXP_RADIUS) {
+                if (block.getLocation().distance(center) > plugin.getConfig().getDouble("bed_end_exp_radius", 8)) {
                     event.setCancelled(true);
                     event.getPlayer().sendMessage(ChatColor.RED + "Cannot use beds in this dimension!");
                 }

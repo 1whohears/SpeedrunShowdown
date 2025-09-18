@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.Team;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,9 +54,13 @@ public class ProgressionPointsManager {
         return num;
     }
 
-    public void onGameEnd() {
+    public void onGameEnd(@Nullable Team winningTeam) {
         for (String tn : pointTeamMap.values()) {
-            int points = getNumPoints(tn);
+            double points = getNumPoints(tn);
+            if (plugin.isSuddenDeath() && winningTeam != null && winningTeam.getName().equals(tn)) {
+                double suddenDeathPoints = plugin.getConfig().getDouble("sudden_death_progression_points", 3.5);
+                points += suddenDeathPoints;
+            }
             plugin.getServer().broadcastMessage("Team "+tn+" has "+points+" Progression Points!");
         }
     }

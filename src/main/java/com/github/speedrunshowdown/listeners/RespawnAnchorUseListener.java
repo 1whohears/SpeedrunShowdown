@@ -12,8 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import static com.github.speedrunshowdown.listeners.BedUseListener.ALLOW_BED_EXP_RADIUS;
-
 public class RespawnAnchorUseListener implements Listener {
     @EventHandler
     public void onRespawnAnchorUse(PlayerInteractEvent event) {
@@ -35,7 +33,7 @@ public class RespawnAnchorUseListener implements Listener {
                 Block block = event.getClickedBlock();
                 if (block == null) return;
                 Location center = new Location(block.getWorld(), 0, block.getY(), 0);
-                if (block.getLocation().distance(center) > ALLOW_BED_EXP_RADIUS) {
+                if (block.getLocation().distance(center) > plugin.getConfig().getDouble("bed_end_exp_radius", 8)) {
                     event.setCancelled(true);
                     event.getPlayer().sendMessage(ChatColor.RED + "Cannot use beds in this dimension!");
                 }

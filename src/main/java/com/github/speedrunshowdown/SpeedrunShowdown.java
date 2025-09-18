@@ -399,6 +399,45 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 20
             );
         }
+
+        // if a team wins by progression points already then win them
+        double suddenDeathPoints = getConfig().getDouble("sudden_death_progression_points", 3.5);
+        double totalPoints = Constants.PROGRESSION_POINTS.length + suddenDeathPoints;
+        double minToWin = Math.ceil(totalPoints / 2d);
+        double most = 0, secondMost = 0;
+        Team mostTeam = null;
+        for (Team team : getLivingTeams()) {
+            int points = getProgressionPointManager().getNumPoints(team.getName());
+            if (points >= minToWin) {
+                win(team, "Forced because "+points+" Progression Points!");
+                return;
+            }
+            if (points > most) {
+                secondMost = most;
+                most = points;
+                mostTeam = team;
+            } else if (points > secondMost) {
+                secondMost = points;
+            }
+        }
+        if (most > secondMost + suddenDeathPoints && mostTeam != null) {
+            win(mostTeam, "Forced because "+most+" Progression Points!");
+        }
+    }
+
+    public List<Team> getLivingTeams() {
+        List<Team> teams = new ArrayList<>();
+        for (Team team : getScoreboardManager().getScoreboard().getTeams()) {
+            if (team.getSize() == 0) continue;
+            for (String entry : team.getEntries()) {
+                Player player = getServer().getPlayer(entry);
+                if (player != null && player.getGameMode() == GameMode.SURVIVAL) {
+                    teams.add(team);
+                    break;
+                }
+            }
+        }
+        return teams;
     }
 
     private void teleportPlayersToTheEnd() {
@@ -554,7 +593,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             firework.setFireworkMeta(fireworkMeta);
         }
 
-        progressionPointsManager.onGameEnd();
+        progressionPointsManager.onGameEnd(team);
     }
 
     public void randomize() {
