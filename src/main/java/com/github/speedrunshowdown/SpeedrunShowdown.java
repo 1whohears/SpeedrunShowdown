@@ -401,7 +401,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
 
         // if a team wins by progression points already then win them
-        double suddenDeathPoints = getConfig().getDouble("sudden_death_progression_points", 3.5);
+        double suddenDeathPoints = getConfig().getDouble("sudden_death_progression_points", 2.5);
         double totalPoints = Constants.PROGRESSION_POINTS.length + suddenDeathPoints;
         double minToWin = Math.ceil(totalPoints / 2d);
         double most = 0, secondMost = 0;

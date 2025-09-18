@@ -41,5 +41,5 @@ teams:
   chorus: "DARK_PURPLE"
   obsidian: "BLACK"
 unlock_locate_nether_time: 480 # seconds
-sudden_death_progression_points: 3.5
+sudden_death_progression_points: 2.5
 bed_end_exp_radius: 8

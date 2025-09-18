@@ -58,7 +58,7 @@ public class ProgressionPointsManager {
         for (String tn : pointTeamMap.values()) {
             double points = getNumPoints(tn);
             if (plugin.isSuddenDeath() && winningTeam != null && winningTeam.getName().equals(tn)) {
-                double suddenDeathPoints = plugin.getConfig().getDouble("sudden_death_progression_points", 3.5);
+                double suddenDeathPoints = plugin.getConfig().getDouble("sudden_death_progression_points", 2.5);
                 points += suddenDeathPoints;
             }
             plugin.getServer().broadcastMessage("Team "+tn+" has "+points+" Progression Points!");
