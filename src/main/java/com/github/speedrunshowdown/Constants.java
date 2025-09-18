@@ -1092,16 +1092,11 @@ public class Constants {
 
 	public static final String[] PROGRESSION_POINTS = {
             "minecraft:story/smelt_iron",
-            "minecraft:story/form_obsidian",
 			"minecraft:story/enter_the_nether",
             "minecraft:nether/find_bastion",
             "minecraft:nether/distract_piglin",
+            "minecraft:story/form_obsidian",
             "minecraft:nether/find_fortress",
-            "minecraft:nether/explore_nether",
-			"minecraft:story/follow_ender_eye",
-            "minecraft:adventure/trade",
-            "minecraft:husbandry/tame_an_animal",
-			"minecraft:story/mine_diamond",
-            "minecraft:nether/obtain_ancient_debris"
+			"minecraft:story/follow_ender_eye"
 	};
 }
