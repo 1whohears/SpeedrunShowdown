@@ -1,5 +1,5 @@
 name: SpeedrunShowdown
-version: 2.1.8
+version: 2.2.0
 author: KaiNakamura
 main: com.github.speedrunshowdown.SpeedrunShowdown
 api-version: 1.21.5
@@ -53,6 +53,10 @@ commands:
     description: See a list of progression points. Who has what, and what is left.
     permission: netherlocate
     usage: /listprogressionpoints
+  resetnewworld:
+    description: Deletes the current world and resets to a new seed!
+    permission: speedrunshowdown
+    usage: /resetnewworld
 permissions:
   speedrunshowdown:
     description: Allows speedrunshowdown commands
