@@ -14,20 +14,26 @@ public class EntityDeathListener implements Listener {
     @EventHandler
     public void onEntityDeath(EntityDeathEvent event) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
-        if (plugin.isRunning() && event.getEntity().getType() == EntityType.ENDER_DRAGON) {
+        if (plugin.isRunning() && event.getEntity().getType().equals(EntityType.ENDER_DRAGON)) {
             DamageSource source = event.getDamageSource();
             Entity cause = source.getCausingEntity();
+            Player player;
             if (cause == null) {
-                plugin.getServer().sendPlainMessage(ChatColor.YELLOW + "The dragon died from an unknown cause. " +
-                        "The winner may need to be decided manually!");
-                return;
-            }
-            if (!(cause.getType() == EntityType.PLAYER)) {
+                if (plugin.getBedExplodeInEndTick() == plugin.getServer().getCurrentTick()
+                        && plugin.getBedExplodeInEndPlayer() != null) {
+                    player = plugin.getBedExplodeInEndPlayer();
+                } else {
+                    plugin.getServer().sendPlainMessage(ChatColor.YELLOW + "The dragon died from an unknown cause. " +
+                            "The winner may need to be decided manually!");
+                    return;
+                }
+            } else if (cause.getType().equals(EntityType.PLAYER)) {
+                player = (Player) cause;
+            } else {
                 plugin.getServer().sendPlainMessage(ChatColor.YELLOW + "The dragon died from a non player entity." +
                         "The winner may need to be decided manually!");
                 return;
             }
-            Player player = (Player) cause;
             plugin.win(
                     plugin.getScoreboardManager().getTeam(player),
                     player.getName() + " killed the dragon!"

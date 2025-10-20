@@ -42,6 +42,7 @@ import org.bukkit.scoreboard.Team;
 
 import com.github.speedrunshowdown.border.WorldBorderManager;
 import com.github.speedrunshowdown.gui.ScoreboardManager;
+import org.jetbrains.annotations.Nullable;
 
 public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private boolean running = false;
@@ -58,6 +59,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private Material[] randomItems = Constants.ITEMS.clone();
 
     private String level_name = "world";
+
+    private int bedExplodeInEndTick = -1;
+    private Player bedExplodeInEndPlayer = null;
 
     @Override
     public void onEnable() {
@@ -103,6 +107,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new RespawnAnchorUseListener(), this);
         getServer().getPluginManager().registerEvents(new ToolUseListener(), this);
         getServer().getPluginManager().registerEvents(new PiglinBruteListener(), this);
+        getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
@@ -712,5 +717,22 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public ProgressionPointsManager getProgressionPointManager() {
         return progressionPointsManager;
+    }
+
+    public int getBedExplodeInEndTick() {
+        return bedExplodeInEndTick;
+    }
+
+    public void setBedExplodeInEndTick(int bedExplodeInEndTick) {
+        this.bedExplodeInEndTick = bedExplodeInEndTick;
+    }
+
+    @Nullable
+    public Player getBedExplodeInEndPlayer() {
+        return bedExplodeInEndPlayer;
+    }
+
+    public void setBedExplodeInEndPlayer(Player bedExplodeInEndPlayer) {
+        this.bedExplodeInEndPlayer = bedExplodeInEndPlayer;
     }
 }

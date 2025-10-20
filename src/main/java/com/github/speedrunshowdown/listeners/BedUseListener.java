@@ -37,8 +37,11 @@ public class BedUseListener implements Listener {
                 Location center = new Location(block.getWorld(), 0, block.getY(), 0);
                 if (block.getLocation().distance(center) > plugin.getConfig().getDouble("bed_end_exp_radius", 8)) {
                     event.setCancelled(true);
-                    event.getPlayer().sendMessage(ChatColor.RED + "Cannot use beds in this dimension!");
+                    event.getPlayer().sendMessage(ChatColor.RED + "Beds can only be used near the fountain!");
+                    return;
                 }
+                plugin.setBedExplodeInEndTick(plugin.getServer().getCurrentTick());
+                plugin.setBedExplodeInEndPlayer(event.getPlayer());
             }
         }
     }

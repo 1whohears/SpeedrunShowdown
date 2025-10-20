@@ -28,15 +28,18 @@ public class RespawnAnchorUseListener implements Listener {
             Environment environment = event.getPlayer().getWorld().getEnvironment();
             if (environment == Environment.NORMAL) {
                 event.setCancelled(true);
-                event.getPlayer().sendMessage(ChatColor.RED + "Cannot use beds in this dimension!");
+                event.getPlayer().sendMessage(ChatColor.RED + "Cannot use Respawn Anchors in this dimension!");
             } else if (environment == Environment.THE_END) {
                 Block block = event.getClickedBlock();
                 if (block == null) return;
                 Location center = new Location(block.getWorld(), 0, block.getY(), 0);
                 if (block.getLocation().distance(center) > plugin.getConfig().getDouble("bed_end_exp_radius", 8)) {
                     event.setCancelled(true);
-                    event.getPlayer().sendMessage(ChatColor.RED + "Cannot use beds in this dimension!");
+                    event.getPlayer().sendMessage(ChatColor.RED + "Respawn Anchors can only be used near the fountain!");
+                    return;
                 }
+                plugin.setBedExplodeInEndTick(plugin.getServer().getCurrentTick());
+                plugin.setBedExplodeInEndPlayer(event.getPlayer());
             }
         }
     }
