@@ -123,7 +123,12 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                         player.setGameMode(GameMode.ADVENTURE);
                     }
                 }
-                getOverworld().setTime(6000);
+                if (getOverworld().getTime() != 6000) {
+                    getOverworld().setTime(6000);
+                }
+                getServer().getServerTickManager().setFrozen(true);
+            } else {
+                getServer().getServerTickManager().setFrozen(false);
             }
         }, 20, 20);
     }
@@ -336,6 +341,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Update world border
         worldBorderManager.init();
+
+        getServer().getServerTickManager().setFrozen(false);
     }
 
     public void stop() {
@@ -359,6 +366,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Cancel repeating task
         getServer().getScheduler().cancelTask(taskId);
+
+        getServer().getServerTickManager().setFrozen(true);
     }
 
     public void suddenDeath() {
