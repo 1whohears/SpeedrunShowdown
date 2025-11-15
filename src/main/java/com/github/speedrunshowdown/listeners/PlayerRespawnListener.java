@@ -50,6 +50,10 @@ public class PlayerRespawnListener implements Listener {
                     new Location(end, 0.5, end.getHighestBlockYAt(0, 0) + 1, 0.5, 0, 90)
                 );
             }
+
+            if (event.isMissingRespawnBlock() && event.getRespawnReason() == PlayerRespawnEvent.RespawnReason.DEATH) {
+                plugin.getRespawnFixerManager().onPlayerRespawn(player);
+            }
         }
     }
 }

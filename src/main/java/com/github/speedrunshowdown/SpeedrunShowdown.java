@@ -55,6 +55,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private ScoreboardManager scoreboardManager;
     private WorldBorderManager worldBorderManager;
     private ProgressionPointsManager progressionPointsManager;
+    private RespawnFixerManager respawnFixerManager;
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
@@ -108,12 +109,14 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new ToolUseListener(), this);
         getServer().getPluginManager().registerEvents(new PiglinBruteListener(), this);
         getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
+        getServer().getPluginManager().registerEvents(new SetSpawnListener(), this);
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             scoreboardManager = new ScoreboardManager();
             worldBorderManager = new WorldBorderManager();
             progressionPointsManager = new ProgressionPointsManager();
+            respawnFixerManager = new RespawnFixerManager();
         });
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             // Set player gamemode to adventure if the game hasn't started yet
@@ -251,6 +254,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         worldBorderManager.init();
 
         progressionPointsManager.init();
+        respawnFixerManager.init();
 
         // Set time to 0
         getOverworld().setTime(0);
@@ -755,5 +759,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public void setBedExplodeInEndPlayer(Player bedExplodeInEndPlayer) {
         this.bedExplodeInEndPlayer = bedExplodeInEndPlayer;
+    }
+
+    public RespawnFixerManager getRespawnFixerManager() {
+        return respawnFixerManager;
     }
 }
