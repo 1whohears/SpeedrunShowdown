@@ -343,6 +343,12 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         worldBorderManager.init();
 
         getServer().getServerTickManager().setFrozen(false);
+
+        for (Player player : getServer().getOnlinePlayers()) {
+            if (player.getGameMode() == GameMode.ADVENTURE) {
+                player.setGameMode(GameMode.SURVIVAL);
+            }
+        }
     }
 
     public void stop() {
@@ -368,6 +374,12 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getScheduler().cancelTask(taskId);
 
         getServer().getServerTickManager().setFrozen(true);
+
+        for (Player player : getServer().getOnlinePlayers()) {
+            if (player.getGameMode() == GameMode.SURVIVAL) {
+                player.setGameMode(GameMode.ADVENTURE);
+            }
+        }
     }
 
     public void suddenDeath() {
