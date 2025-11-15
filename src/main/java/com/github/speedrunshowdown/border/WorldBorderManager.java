@@ -7,7 +7,7 @@ import com.github.speedrunshowdown.SpeedrunShowdown;
 
 public class WorldBorderManager implements Runnable {
     private static final int PREGAME_BORDER_SIZE = 32; // blocks
-    public static final int NETHER_BORDER_SIZE = 1000; // SHOULD BE AT LEAST 1000 BECAUSE FORTRESS QUADRANTS
+    public static final int NETHER_BORDER_SIZE = 1250; // SHOULD BE AT LEAST 1000 BECAUSE FORTRESS QUADRANTS
     private static final int OVERWORLD_BORDER_SIZE = NETHER_BORDER_SIZE * 8; // blocks
     private static final int END_BORDER_SIZE = 1000; // blocks
 

@@ -18,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 public class LocStrucCommand implements CommandExecutor {
 
     public static final int CHUNKS_TO_CHECK = 4000;
+    public static final int STRUCTURE_VERIFY_RANGE = 250;
 
     private final Structure structure;
     private final String structure_name;
@@ -94,7 +95,9 @@ public class LocStrucCommand implements CommandExecutor {
         return result;
     }
     public static boolean checkInWorldBorder(Location location) {
-        int radius = WorldBorderManager.NETHER_BORDER_SIZE / 2;
+        return checkInRange(location, WorldBorderManager.NETHER_BORDER_SIZE / 2);
+    }
+    public static boolean checkInRange(Location location, int radius) {
         return location.getX() < radius && location.getX() > -radius &&
                 location.getZ() < radius && location.getZ() > -radius;
     }
