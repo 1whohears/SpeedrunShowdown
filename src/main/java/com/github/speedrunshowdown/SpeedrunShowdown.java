@@ -110,6 +110,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new PiglinBruteListener(), this);
         getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
         getServer().getPluginManager().registerEvents(new SetSpawnListener(), this);
+        getServer().getPluginManager().registerEvents(new PlaceBlockListener(), this);
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
