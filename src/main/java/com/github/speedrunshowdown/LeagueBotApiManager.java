@@ -220,8 +220,8 @@ public class LeagueBotApiManager {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json");
-            con.setConnectTimeout(5000);
-            con.setReadTimeout(5000);
+            con.setConnectTimeout(10000);
+            con.setReadTimeout(10000);
             response = getBufferedReader(con);
             con.disconnect();
         } catch (IOException e) {
