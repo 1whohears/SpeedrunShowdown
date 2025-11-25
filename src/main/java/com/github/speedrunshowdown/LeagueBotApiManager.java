@@ -22,28 +22,8 @@ public class LeagueBotApiManager {
         plugin = SpeedrunShowdown.getInstance();
     }
 
-    public boolean linkDiscordAccount(CommandSender sender, Player player, String discordUsername) {
-        String leagueBotURL = getRequestURL("/league/link/minecraft/player");
-        leagueBotURL += "&mcUUID="+player.getUniqueId()+"&discordUsername="+discordUsername;
-
-        String response = getResponse(leagueBotURL, sender);
-        if (response == null) return false;
-
-        sender.sendMessage(ChatColor.YELLOW+response);
-
-        return true;
-    }
-
-    public String getRequestURL(String type) {
-        long guildId = plugin.getConfig().getLong("league_bot_guild_id");
-        String leagueName = plugin.getConfig().getString("league_bot_league_name");
-        String leagueBotURL = plugin.getConfig().getString("league_bot_url");
-        leagueBotURL += type+"?guildId="+guildId+"&leagueName="+leagueName;
-        return leagueBotURL;
-    }
-
     public boolean createAutoTeamMatch(CommandSender sender, List<Player> players,
-                                              String team1Name, String team2Name) {
+                                       String team1Name, String team2Name) {
         if (plugin.isRunning()) {
             sender.sendMessage(ChatColor.RED+"Game is already running!");
             return false;
@@ -72,6 +52,26 @@ public class LeagueBotApiManager {
         return true;
     }
 
+    public boolean linkDiscordAccount(CommandSender sender, Player player, String discordUsername) {
+        String leagueBotURL = getRequestURL("/league/link/minecraft/player");
+        leagueBotURL += "&mcUUID="+player.getUniqueId()+"&discordUsername="+discordUsername;
+
+        String response = getResponse(leagueBotURL, sender);
+        if (response == null) return false;
+
+        sender.sendMessage(ChatColor.YELLOW+response);
+
+        return true;
+    }
+
+    public String getRequestURL(String type) {
+        long guildId = plugin.getConfig().getLong("league_bot_guild_id");
+        String leagueName = plugin.getConfig().getString("league_bot_league_name");
+        String leagueBotURL = plugin.getConfig().getString("league_bot_url");
+        leagueBotURL += type+"?guildId="+guildId+"&leagueName="+leagueName;
+        return leagueBotURL;
+    }
+
     @Nullable
     private static String getResponse(String requestURL, CommandSender sender) {
         String response;
@@ -80,8 +80,8 @@ public class LeagueBotApiManager {
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json");
-            con.setConnectTimeout(1000);
-            con.setReadTimeout(1000);
+            con.setConnectTimeout(5000);
+            con.setReadTimeout(5000);
             response = getBufferedReader(con);
             con.disconnect();
         } catch (IOException e) {
