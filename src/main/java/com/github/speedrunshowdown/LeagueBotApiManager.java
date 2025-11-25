@@ -141,7 +141,8 @@ public class LeagueBotApiManager {
         handleTeamResponse(team1, players, team1Name);
         handleTeamResponse(team2, players, team2Name);
 
-        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId+" | "+team1+" vs "+team2
+        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId
+                +" | "+team1.get("name").getAsString()+" vs "+team2.get("name").getAsString()
                 +" | has been created and will begin shortly!");
         for (Player player : players) {
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
@@ -161,7 +162,10 @@ public class LeagueBotApiManager {
             //long id = member.get("id").getAsLong();
             String uuid = member.get("mcUUID").getAsString();
             Player player = getPlayerInList(uuid, players);
-            if (player == null) continue;
+            if (player == null) {
+                System.out.println("could not find player with uuid "+uuid);
+                continue;
+            }
             mcTeam.addEntity(player);
         }
     }
@@ -183,8 +187,10 @@ public class LeagueBotApiManager {
 
     @Nullable
     private static Player getPlayerInList(String uuid, List<Player> players) {
-        return players.stream().filter(player -> player.getUniqueId().toString().equals(uuid))
-                .findFirst().orElse(null);
+        for (Player player : players)
+            if (player.getUniqueId().toString().equals(uuid))
+                return player;
+        return null;
     }
 
     public boolean linkDiscordAccount(CommandSender sender, Player player, String discordUsername) {
@@ -214,6 +220,7 @@ public class LeagueBotApiManager {
 
     @Nullable
     private static String getResponse(String requestURL, CommandSender sender) {
+        System.out.println("GET: "+requestURL);
         String response;
         try {
             URL url = new URL(requestURL);
@@ -229,6 +236,7 @@ public class LeagueBotApiManager {
             e.printStackTrace();
             return null;
         }
+        System.out.println("RESPONSE: "+response);
         return response;
     }
 
