@@ -1,8 +1,14 @@
 package com.github.speedrunshowdown;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.bukkit.ChatColor;
+import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -15,6 +21,8 @@ import java.net.URL;
 import java.util.List;
 
 public class LeagueBotApiManager {
+
+    public static final Gson GSON = new Gson();
 
     private final SpeedrunShowdown plugin;
 
@@ -44,22 +52,75 @@ public class LeagueBotApiManager {
         mcUUIDList = mcUUIDList.substring(0, mcUUIDList.length()-1);
         leagueBotURL += "&mcUUIDList="+mcUUIDList;
 
-        String response = getResponse(leagueBotURL, sender);
-        if (response == null) return false;
+        String responseStr = getResponse(leagueBotURL, sender);
+        if (responseStr == null) return false;
+        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
 
-        sender.sendMessage(ChatColor.YELLOW+response);
+        if (response.has("error")) {
+            String error = ChatColor.RED+response.get("error").getAsString();
+            if (response.has("badUUID")) {
+                String badUUID = response.get("badUUID").getAsString();
+                Player badPlayer = getPlayerInList(badUUID, players);
+                String name = "Unknown player";
+                if (badPlayer != null) name = badPlayer.getName();
+                error += " "+name;
+            }
+            sender.sendMessage(error);
+            return false;
+        }
+        sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
+
+        int setId = response.get("set_id").getAsInt();
+        JsonObject team1 = response.getAsJsonObject("team1");
+        JsonObject team2 = response.getAsJsonObject("team2");
+
+        handleTeamResponse(team1, players, team1Name);
+        handleTeamResponse(team2, players, team2Name);
+
+        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId+" | "+team1+" vs "+team2
+                +" | has been created and will begin shortly!");
+        for (Player player : players) {
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+        }
 
         return true;
+    }
+
+    private void handleTeamResponse(JsonObject team, List<Player> players, String requestTeamName) {
+        //String responseTeamName = team.get("name").getAsString();
+        Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
+        Team mcTeam = scoreboard.getTeam(requestTeamName);
+        if (mcTeam == null) return;
+        JsonArray members = team.get("members").getAsJsonArray();
+        for (int i = 0; i < members.size(); ++i) {
+            JsonObject member = members.get(i).getAsJsonObject();
+            //long id = member.get("id").getAsLong();
+            String uuid = member.get("mcUUID").getAsString();
+            Player player = getPlayerInList(uuid, players);
+            if (player == null) continue;
+            mcTeam.addEntity(player);
+        }
+    }
+
+    @Nullable
+    private static Player getPlayerInList(String uuid, List<Player> players) {
+        return players.stream().filter(player -> player.getUniqueId().toString().equals(uuid))
+                .findFirst().orElse(null);
     }
 
     public boolean linkDiscordAccount(CommandSender sender, Player player, String discordUsername) {
         String leagueBotURL = getRequestURL("/league/link/minecraft/player");
         leagueBotURL += "&mcUUID="+player.getUniqueId()+"&discordUsername="+discordUsername;
 
-        String response = getResponse(leagueBotURL, sender);
-        if (response == null) return false;
+        String responseStr = getResponse(leagueBotURL, sender);
+        if (responseStr == null) return false;
+        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
 
-        sender.sendMessage(ChatColor.YELLOW+response);
+        if (response.has("error")) {
+            sender.sendMessage(ChatColor.RED+response.get("error").getAsString());
+            return false;
+        }
+        sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
 
         return true;
     }
