@@ -18,6 +18,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.List;
 
 public class LeagueBotApiManager {
@@ -28,6 +29,73 @@ public class LeagueBotApiManager {
 
     public LeagueBotApiManager() {
         plugin = SpeedrunShowdown.getInstance();
+    }
+
+    public boolean createTeamMatch(CommandSender sender, String team1Name, String team2Name) {
+        if (plugin.isRunning()) {
+            sender.sendMessage(ChatColor.RED+"Game is already running!");
+            return false;
+        }
+        if (team1Name.equals(team2Name)) {
+            sender.sendMessage(ChatColor.RED+"Team Names can't be the same!");
+            return false;
+        }
+
+        Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
+        Team team1 = scoreboard.getTeam(team1Name);
+        Team team2 = scoreboard.getTeam(team2Name);
+
+        if (team1 == null) {
+            sender.sendMessage(ChatColor.RED+team1Name+" does not exist!");
+            return false;
+        }
+        if (team2 == null) {
+            sender.sendMessage(ChatColor.RED+team2Name+" does not exist!");
+            return false;
+        }
+
+        List<Player> team1Players = getPlayers(team1);
+        List<Player> team2Players = getPlayers(team2);
+
+        if (team1Players.isEmpty() || team2Players.isEmpty()) {
+            sender.sendMessage(ChatColor.RED+"One or both teams are empty!");
+            return false;
+        }
+
+        String leagueBotURL = getRequestURL("/league/createset/ingameteams");
+        leagueBotURL += "&team1Name="+team1Name+"&team2Name="+team2Name;
+        leagueBotURL += "&team1MCUUIDList="+getMCUUIDList(team1Players);
+        leagueBotURL += "&team2MCUUIDList="+getMCUUIDList(team2Players);
+
+        String responseStr = getResponse(leagueBotURL, sender);
+        if (responseStr == null) return false;
+        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
+
+        List<Player> allPlayers = new ArrayList<>(team1Players);
+        allPlayers.addAll(team2Players);
+
+        if (response.has("error")) {
+            String error = ChatColor.RED+response.get("error").getAsString();
+            if (response.has("badUUID")) {
+                String badUUID = response.get("badUUID").getAsString();
+                Player badPlayer = getPlayerInList(badUUID, allPlayers);
+                String name = "Unknown player";
+                if (badPlayer != null) name = badPlayer.getName();
+                error += " "+name;
+            }
+            sender.sendMessage(error);
+            return false;
+        }
+        sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
+
+        int setId = response.get("set_id").getAsInt();
+        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId+" | "+team1+" vs "+team2
+                +" | has been created and will begin shortly!");
+        for (Player player : allPlayers) {
+            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+        }
+
+        return true;
     }
 
     public boolean createAutoTeamMatch(CommandSender sender, List<Player> players,
@@ -46,11 +114,7 @@ public class LeagueBotApiManager {
         }
         String leagueBotURL = getRequestURL("/league/createset/autoteams");
         leagueBotURL += "&team1Name="+team1Name+"&team2Name="+team2Name;
-
-        String mcUUIDList = "";
-        for (Player player : players) mcUUIDList += player.getUniqueId() + ",";
-        mcUUIDList = mcUUIDList.substring(0, mcUUIDList.length()-1);
-        leagueBotURL += "&mcUUIDList="+mcUUIDList;
+        leagueBotURL += "&mcUUIDList="+getMCUUIDList(players);
 
         String responseStr = getResponse(leagueBotURL, sender);
         if (responseStr == null) return false;
@@ -100,6 +164,21 @@ public class LeagueBotApiManager {
             if (player == null) continue;
             mcTeam.addEntity(player);
         }
+    }
+
+    public List<Player> getPlayers(Team team) {
+        List<Player> players = new ArrayList<>();
+        for (String name : team.getEntries()) {
+            Player player = plugin.getServer().getPlayer(name);
+            if (player != null) players.add(player);
+        }
+        return players;
+    }
+
+    private String getMCUUIDList(List<Player> players) {
+        String mcUUIDList = "";
+        for (Player player : players) mcUUIDList += player.getUniqueId() + ",";
+        return mcUUIDList.substring(0, mcUUIDList.length()-1);
     }
 
     @Nullable

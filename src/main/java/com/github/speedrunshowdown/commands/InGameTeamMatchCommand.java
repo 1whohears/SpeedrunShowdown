@@ -16,27 +16,22 @@ import org.bukkit.scoreboard.Team;
 
 import java.util.List;
 
-public class AutoTeamMatchCommand {
+public class InGameTeamMatchCommand {
     public static LiteralCommandNode<CommandSourceStack> get() {
-        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("createautoteammatch")
+        LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("createingameteammatch")
                 .requires(sender -> sender.getSender().hasPermission("speedrunshowdown"))
                 .then(Commands.argument("team1Name", StringArgumentType.word())
                         .suggests(getTeamSuggestions())
                         .then(Commands.argument("team2Name", StringArgumentType.word())
                                 .suggests(getTeamSuggestions())
-                                .then(Commands.argument("players", ArgumentTypes.players())
-                                        .executes(context -> {
-                                            String team1Name = StringArgumentType.getString(context, "team1Name");
-                                            String team2Name = StringArgumentType.getString(context, "team2Name");
-                                            List<Player> players = context.getArgument("players",
-                                                            PlayerSelectorArgumentResolver.class)
-                                                    .resolve(context.getSource());
-                                            if (SpeedrunShowdown.getInstance().getLeagueBotApiManager().createAutoTeamMatch(
-                                                    context.getSource().getSender(), players, team1Name, team2Name))
-                                                return Command.SINGLE_SUCCESS;
-                                            else return 0;
-                                        })
-                        )
+                                .executes(context -> {
+                                    String team1Name = StringArgumentType.getString(context, "team1Name");
+                                    String team2Name = StringArgumentType.getString(context, "team2Name");
+                                    if (SpeedrunShowdown.getInstance().getLeagueBotApiManager().createTeamMatch(
+                                            context.getSource().getSender(), team1Name, team2Name))
+                                        return Command.SINGLE_SUCCESS;
+                                    else return 0;
+                                })
                 )
         );
         return root.build();

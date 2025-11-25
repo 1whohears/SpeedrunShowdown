@@ -57,6 +57,10 @@ commands:
     description: Deletes the current world and resets to a new seed!
     permission: speedrunshowdown
     usage: /resetnewworld
+  createingameteammatch:
+    description: Coordinates with the Gamer League Discord Bot to create a match with the in game teams.
+    permission: speedrunshowdown
+    usage: /createingameteammatch <team1Name> <team2Name>
   createautoteammatch:
     description: Coordinates with the Gamer League Discord Bot to create a match with balanced teams.
     permission: speedrunshowdown

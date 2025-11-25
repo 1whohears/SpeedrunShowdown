@@ -80,8 +80,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("checknether").setExecutor(new VerifyNetherStructuresCommand());
         getCommand("listprogressionpoints").setExecutor(new ProgressionPoints());
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
-            commands.registrar().register(AutoTeamMatchCommand.get());
             commands.registrar().register(LinkDiscordCommand.get());
+            commands.registrar().register(AutoTeamMatchCommand.get());
+            commands.registrar().register(InGameTeamMatchCommand.get());
         });
 
         // Create listeners
