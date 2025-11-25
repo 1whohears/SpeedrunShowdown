@@ -4,6 +4,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,6 +22,26 @@ public class LeagueBotApiManager {
         plugin = SpeedrunShowdown.getInstance();
     }
 
+    public boolean linkDiscordAccount(CommandSender sender, Player player, String discordUsername) {
+        String leagueBotURL = getRequestURL("/league/link/minecraft/player");
+        leagueBotURL += "&mcUUID="+player.getUniqueId()+"&discordUsername="+discordUsername;
+
+        String response = getResponse(leagueBotURL, sender);
+        if (response == null) return false;
+
+        sender.sendMessage(ChatColor.YELLOW+response);
+
+        return true;
+    }
+
+    public String getRequestURL(String type) {
+        long guildId = plugin.getConfig().getLong("league_bot_guild_id");
+        String leagueName = plugin.getConfig().getString("league_bot_league_name");
+        String leagueBotURL = plugin.getConfig().getString("league_bot_url");
+        leagueBotURL += type+"?guildId="+guildId+"&leagueName="+leagueName;
+        return leagueBotURL;
+    }
+
     public boolean createAutoTeamMatch(CommandSender sender, List<Player> players,
                                               String team1Name, String team2Name) {
         if (plugin.isRunning()) {
@@ -35,11 +56,7 @@ public class LeagueBotApiManager {
             sender.sendMessage(ChatColor.RED+"Need at least 2 players!");
             return false;
         }
-
-        long guildId = plugin.getConfig().getLong("league_bot_guild_id");
-        String leagueName = plugin.getConfig().getString("league_bot_league_name");
-        String leagueBotURL = plugin.getConfig().getString("league_bot_url");
-        leagueBotURL += "/league/createset/autoteams?guildId="+guildId+"&leagueName="+leagueName;
+        String leagueBotURL = getRequestURL("/league/createset/autoteams");
         leagueBotURL += "&team1Name="+team1Name+"&team2Name="+team2Name;
 
         String mcUUIDList = "";
@@ -47,9 +64,19 @@ public class LeagueBotApiManager {
         mcUUIDList = mcUUIDList.substring(0, mcUUIDList.length()-1);
         leagueBotURL += "&mcUUIDList="+mcUUIDList;
 
+        String response = getResponse(leagueBotURL, sender);
+        if (response == null) return false;
+
+        sender.sendMessage(ChatColor.YELLOW+response);
+
+        return true;
+    }
+
+    @Nullable
+    private static String getResponse(String requestURL, CommandSender sender) {
         String response;
         try {
-            URL url = new URL(leagueBotURL);
+            URL url = new URL(requestURL);
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
             con.setRequestProperty("Content-Type", "application/json");
@@ -60,12 +87,9 @@ public class LeagueBotApiManager {
         } catch (IOException e) {
             sender.sendMessage(ChatColor.RED+"Failed: "+e.getMessage());
             e.printStackTrace();
-            return false;
+            return null;
         }
-
-        sender.sendMessage(ChatColor.YELLOW+response);
-
-        return true;
+        return response;
     }
 
     private static @NotNull String getBufferedReader(HttpURLConnection con) throws IOException {

@@ -81,6 +81,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("listprogressionpoints").setExecutor(new ProgressionPoints());
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             commands.registrar().register(AutoTeamMatchCommand.get());
+            commands.registrar().register(LinkDiscordCommand.get());
         });
 
         // Create listeners

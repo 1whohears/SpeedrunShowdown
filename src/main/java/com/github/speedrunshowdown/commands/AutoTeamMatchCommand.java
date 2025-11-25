@@ -26,10 +26,6 @@ public class AutoTeamMatchCommand {
                         .then(Commands.argument("team2Name", StringArgumentType.word())
                                 .suggests(getTeamSuggestions())
                                 .then(Commands.argument("players", ArgumentTypes.players())
-                                        /*.suggests((ctx, builder) -> {
-                                            Bukkit.getOnlinePlayers().stream().map(Player::getName).forEach(builder::suggest);
-                                            return builder.buildFuture();
-                                        })*/
                                         .executes(context -> {
                                             String team1Name = StringArgumentType.getString(context, "team1Name");
                                             String team2Name = StringArgumentType.getString(context, "team2Name");

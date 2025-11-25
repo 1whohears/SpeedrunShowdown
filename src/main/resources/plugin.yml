@@ -61,6 +61,10 @@ commands:
     description: Coordinates with the Gamer League Discord Bot to create a match with balanced teams.
     permission: speedrunshowdown
     usage: /createautoteammatch <team1Name> <team2Name> <players>
+  linkdiscord:
+    description: Link your discord account with your minecraft account.
+    permission: netherlocate
+    usage: /linkdiscord <username>
 permissions:
   speedrunshowdown:
     description: Allows speedrunshowdown commands
