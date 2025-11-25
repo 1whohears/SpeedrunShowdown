@@ -45,3 +45,6 @@ sudden_death_progression_points: 2.5
 bed_end_exp_radius: 8
 end_high_block_stop_height: 100
 end_high_block_stop_radius: 24
+league_bot_url: "http://localhost:8080"
+league_bot_guild_id: -1
+league_bot_league_name: "GamerLeague"

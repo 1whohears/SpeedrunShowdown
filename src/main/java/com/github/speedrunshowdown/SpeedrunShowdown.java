@@ -1,31 +1,16 @@
 package com.github.speedrunshowdown;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.*;
-
+import com.github.speedrunshowdown.border.WorldBorderManager;
 import com.github.speedrunshowdown.commands.*;
+import com.github.speedrunshowdown.gui.ScoreboardManager;
 import com.github.speedrunshowdown.listeners.*;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Color;
-import org.bukkit.FireworkEffect;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Sound;
-import org.bukkit.World;
+import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
+import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.EnderCrystal;
-import org.bukkit.entity.EnderDragon;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Firework;
-import org.bukkit.entity.Item;
-import org.bukkit.entity.Player;
+import org.bukkit.entity.*;
 import org.bukkit.generator.structure.Structure;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
@@ -39,10 +24,12 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Team;
-
-import com.github.speedrunshowdown.border.WorldBorderManager;
-import com.github.speedrunshowdown.gui.ScoreboardManager;
 import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private boolean running = false;
@@ -56,6 +43,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private WorldBorderManager worldBorderManager;
     private ProgressionPointsManager progressionPointsManager;
     private RespawnFixerManager respawnFixerManager;
+    private LeagueBotApiManager leagueBotApiManager;
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
@@ -91,6 +79,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("locatebastion").setExecutor(new LocStrucCommand(Structure.BASTION_REMNANT, "Bastion Remnant"));
         getCommand("checknether").setExecutor(new VerifyNetherStructuresCommand());
         getCommand("listprogressionpoints").setExecutor(new ProgressionPoints());
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
+            commands.registrar().register(AutoTeamMatchCommand.get());
+        });
 
         // Create listeners
         getServer().getPluginManager().registerEvents(new AdvancementListener(), this);
@@ -118,6 +109,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             worldBorderManager = new WorldBorderManager();
             progressionPointsManager = new ProgressionPointsManager();
             respawnFixerManager = new RespawnFixerManager();
+            leagueBotApiManager = new LeagueBotApiManager();
         });
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             // Set player gamemode to adventure if the game hasn't started yet
@@ -764,5 +756,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public RespawnFixerManager getRespawnFixerManager() {
         return respawnFixerManager;
+    }
+
+    public LeagueBotApiManager getLeagueBotApiManager() {
+        return leagueBotApiManager;
     }
 }
