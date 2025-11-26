@@ -211,10 +211,11 @@ public class LeagueBotApiManager {
     }
 
     public String getRequestURL(String type) {
+        String apikey = plugin.getConfig().getString("league_bot_api_key");
         long guildId = plugin.getConfig().getLong("league_bot_guild_id");
         String leagueName = plugin.getConfig().getString("league_bot_league_name");
         String leagueBotURL = plugin.getConfig().getString("league_bot_url");
-        leagueBotURL += type+"?guildId="+guildId+"&leagueName="+leagueName;
+        leagueBotURL += type+"?apikey="+apikey+"&guildId="+guildId+"&leagueName="+leagueName;
         return leagueBotURL;
     }
 
