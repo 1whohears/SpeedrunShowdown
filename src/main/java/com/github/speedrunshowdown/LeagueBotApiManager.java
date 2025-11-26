@@ -162,10 +162,7 @@ public class LeagueBotApiManager {
             //long id = member.get("id").getAsLong();
             String uuid = member.get("mcUUID").getAsString();
             Player player = getPlayerInList(uuid, players);
-            if (player == null) {
-                System.out.println("could not find player with uuid "+uuid);
-                continue;
-            }
+            if (player == null) continue;
             mcTeam.addEntity(player);
         }
     }
@@ -221,7 +218,6 @@ public class LeagueBotApiManager {
 
     @Nullable
     private static String getResponse(String requestURL, CommandSender sender) {
-        System.out.println("GET: "+requestURL);
         String response;
         try {
             URL url = new URL(requestURL);
@@ -237,7 +233,6 @@ public class LeagueBotApiManager {
             e.printStackTrace();
             return null;
         }
-        System.out.println("RESPONSE: "+response);
         return response;
     }
 
