@@ -262,7 +262,6 @@ public class Constants {
 		Material.RED_MUSHROOM_BLOCK,
 		Material.MUSHROOM_STEM,
 		Material.IRON_BARS,
-		Material.CHAIN,
 		Material.GLASS_PANE,
 		Material.MELON,
 		Material.VINE,
@@ -1027,7 +1026,7 @@ public class Constants {
 		Material.TRIDENT,
 		Material.SHEARS,
 		Material.FISHING_ROD,
-			Material.BUCKET,
+            Material.BUCKET,
 			Material.WATER_BUCKET,
 			Material.MACE
 	};
