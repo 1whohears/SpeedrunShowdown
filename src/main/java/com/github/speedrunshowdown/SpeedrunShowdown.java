@@ -112,6 +112,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             progressionPointsManager = new ProgressionPointsManager();
             respawnFixerManager = new RespawnFixerManager();
             leagueBotApiManager = new LeagueBotApiManager();
+            getOverworld().setGameRule(GameRule.LOCATOR_BAR, false);
         });
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             // Set player gamemode to adventure if the game hasn't started yet
