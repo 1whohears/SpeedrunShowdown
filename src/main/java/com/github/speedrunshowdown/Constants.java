@@ -1028,7 +1028,12 @@ public class Constants {
 		Material.FISHING_ROD,
             Material.BUCKET,
 			Material.WATER_BUCKET,
-			Material.MACE
+			Material.MACE,
+            Material.COPPER_PICKAXE,
+            Material.COPPER_AXE,
+            Material.COPPER_SHOVEL,
+            Material.COPPER_HOE,
+            Material.COPPER_SWORD
 	};
 
     public static final Material[] EFFICIENT_TOOLS = {
