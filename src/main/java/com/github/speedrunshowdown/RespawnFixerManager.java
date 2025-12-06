@@ -34,9 +34,9 @@ public class RespawnFixerManager {
         if (!(bedLocation.getBlock().getState() instanceof Bed)) return;
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             player.teleport(bedLocation.add(0, 0.5, 0));
-            plugin.getServer().broadcastMessage(ChatColor.RED+"The Game Thinks your Bed was Obstructed");
-            plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"This Fail Safe Only Works ONCE!");
-            plugin.getServer().broadcastMessage(ChatColor.DARK_PURPLE+"RESET YOUR SPAWN!!!");
+            player.sendMessage(ChatColor.RED+"The Game Thinks your Bed was Obstructed");
+            player.sendMessage(ChatColor.LIGHT_PURPLE+"This Fail Safe Only Works ONCE!");
+            player.sendMessage(ChatColor.DARK_PURPLE+"RESET YOUR SPAWN!!!");
             player.playSound(player.getLocation(), Sound.BLOCK_RESPAWN_ANCHOR_DEPLETE, 1, 1);
         }, 20);
     }
