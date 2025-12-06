@@ -27,8 +27,69 @@ public class LeagueBotApiManager {
 
     private final SpeedrunShowdown plugin;
 
+    private int currentSetId = -1;
+    private String player1UUID = "";
+    private String player2UUID = "";
+    private String player1Team = "";
+    private String player2Team = "";
+    private boolean matchReported = false;
+
     public LeagueBotApiManager() {
         plugin = SpeedrunShowdown.getInstance();
+    }
+
+    public boolean reportMatch(String winningTeamName, int winningScore, int losingScore) {
+        if (matchReported) {
+            plugin.getServer().broadcastMessage(ChatColor.RED
+                    +"Already reported set "+currentSetId);
+            return false;
+        }
+        if (!plugin.isRunning()) {
+            plugin.getServer().broadcastMessage(ChatColor.RED
+                    +"Failed to report a match. Game is not running!");
+            return false;
+        }
+        int setId = getCurrentSetId();
+        if (setId == -1) {
+            plugin.getServer().broadcastMessage(ChatColor.RED
+                    +"Failed to report a match. Plugin does not know the current set id!");
+            return false;
+        }
+        String uuid1, uuid2;
+        int score1, score2;
+        if (winningTeamName.equals(player1Team)) {
+            uuid1 = player1UUID;
+            uuid2 = player2UUID;
+            score1 = winningScore;
+            score2 = losingScore;
+        } else if (winningTeamName.equals(player2Team)) {
+            uuid1 = player2UUID;
+            uuid2 = player1UUID;
+            score1 = losingScore;
+            score2 = winningScore;
+        } else {
+            plugin.getServer().broadcastMessage(ChatColor.RED
+                    +"Failed to report a match. This team was not registered in match "+setId);
+            return false;
+        }
+
+        String leagueBotURL = getRequestURL("/league/reportadmin");
+        leagueBotURL += "&setId="+setId+"&updateRanks=true";
+        leagueBotURL += "&player1UUID="+uuid1+"&player2UUID="+uuid2;
+        leagueBotURL += "&player1Score="+score1+"&player2Score="+score2;
+
+        String responseStr = getResponse(leagueBotURL, null);
+        if (responseStr == null) return false;
+        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
+
+        if (response.has("error")) {
+            plugin.getServer().broadcastMessage(ChatColor.RED+response.get("error").getAsString());
+            return false;
+        }
+        plugin.getServer().broadcastMessage(ChatColor.GREEN+response.get("result").getAsString());
+        matchReported = true;
+
+        return true;
     }
 
     public boolean createTeamMatch(CommandSender sender, String team1Name, String team2Name) {
@@ -89,11 +150,17 @@ public class LeagueBotApiManager {
         sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
 
         int setId = response.get("set_id").getAsInt();
-        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId+" | "+team1+" vs "+team2
+        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId
+                +" | "+team1.getName()+" vs "+team2.getName()
                 +" | has been created and will begin shortly!");
         for (Player player : allPlayers) {
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
         }
+        setCurrentSetParameters(setId,
+                team1Players.getFirst().getUniqueId()+"",
+                team2Players.getFirst().getUniqueId()+"",
+                team1Name, team2Name
+        );
 
         return true;
     }
@@ -112,6 +179,17 @@ public class LeagueBotApiManager {
             sender.sendMessage(ChatColor.RED+"Need at least 2 players!");
             return false;
         }
+
+        Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
+        if (scoreboard.getTeam(team1Name) == null) {
+            sender.sendMessage(ChatColor.RED+team1Name+" does not exist!");
+            return false;
+        }
+        if (scoreboard.getTeam(team2Name) == null) {
+            sender.sendMessage(ChatColor.RED+team2Name+" does not exist!");
+            return false;
+        }
+
         String leagueBotURL = getRequestURL("/league/createset/autoteams");
         leagueBotURL += "&team1Name="+team1Name+"&team2Name="+team2Name;
         leagueBotURL += "&mcUUIDList="+getMCUUIDList(players);
@@ -138,8 +216,8 @@ public class LeagueBotApiManager {
         JsonObject team1 = response.getAsJsonObject("team1");
         JsonObject team2 = response.getAsJsonObject("team2");
 
-        handleTeamResponse(team1, players, team1Name);
-        handleTeamResponse(team2, players, team2Name);
+        String player1UUID = handleTeamResponse(team1, players, team1Name);
+        String player2UUID = handleTeamResponse(team2, players, team2Name);
 
         sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId
                 +" | "+team1.get("name").getAsString()+" vs "+team2.get("name").getAsString()
@@ -147,15 +225,17 @@ public class LeagueBotApiManager {
         for (Player player : players) {
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
         }
+        setCurrentSetParameters(setId, player1UUID, player2UUID, team1Name, team2Name);
 
         return true;
     }
 
-    private void handleTeamResponse(JsonObject team, List<Player> players, String requestTeamName) {
+    private String handleTeamResponse(JsonObject team, List<Player> players, String requestTeamName) {
         //String responseTeamName = team.get("name").getAsString();
         Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
         Team mcTeam = scoreboard.getTeam(requestTeamName);
-        if (mcTeam == null) return;
+        if (mcTeam == null) return "";
+        String player1UUID = "";
         JsonArray members = team.get("members").getAsJsonArray();
         for (int i = 0; i < members.size(); ++i) {
             JsonObject member = members.get(i).getAsJsonObject();
@@ -164,7 +244,9 @@ public class LeagueBotApiManager {
             Player player = getPlayerInList(uuid, players);
             if (player == null) continue;
             mcTeam.addEntity(player);
+            if (player1UUID.isEmpty()) player1UUID = uuid;
         }
+        return player1UUID;
     }
 
     public List<Player> getPlayers(Team team) {
@@ -217,7 +299,7 @@ public class LeagueBotApiManager {
     }
 
     @Nullable
-    private static String getResponse(String requestURL, CommandSender sender) {
+    private static String getResponse(String requestURL, @Nullable CommandSender sender) {
         String response;
         try {
             URL url = new URL(requestURL);
@@ -229,7 +311,9 @@ public class LeagueBotApiManager {
             response = getBufferedReader(con);
             con.disconnect();
         } catch (IOException e) {
-            sender.sendMessage(ChatColor.RED+"Failed: "+e.getMessage());
+            String msg = ChatColor.RED+"Failed: "+e.getMessage();
+            if (sender != null) sender.sendMessage(msg);
+            else SpeedrunShowdown.getInstance().getServer().broadcastMessage(msg);
             e.printStackTrace();
             return null;
         }
@@ -252,6 +336,22 @@ public class LeagueBotApiManager {
         }
         in.close();
         return content.toString();
+    }
+
+    public int getCurrentSetId() {
+        return currentSetId;
+    }
+
+    public boolean setCurrentSetParameters(int id, String player1UUID, String player2UUID,
+                                           String player1Team, String player2Team) {
+        if (plugin.isRunning()) return false;
+        this.currentSetId = id;
+        this.player1UUID = player1UUID;
+        this.player2UUID = player2UUID;
+        this.player1Team = player1Team;
+        this.player2Team = player2Team;
+        matchReported = false;
+        return true;
     }
 
 }

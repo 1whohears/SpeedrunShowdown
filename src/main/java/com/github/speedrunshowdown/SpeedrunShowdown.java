@@ -622,6 +622,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
 
         progressionPointsManager.onGameEnd(team);
+        if (team != null) leagueBotApiManager.reportMatch(team.getName(), 100, 0);
     }
 
     public void randomize() {
