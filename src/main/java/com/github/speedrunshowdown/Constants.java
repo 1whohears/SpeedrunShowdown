@@ -1033,7 +1033,14 @@ public class Constants {
             Material.COPPER_AXE,
             Material.COPPER_SHOVEL,
             Material.COPPER_HOE,
-            Material.COPPER_SWORD
+            Material.COPPER_SWORD,
+            Material.WOODEN_SPEAR,
+            Material.STONE_SPEAR,
+            Material.COPPER_SPEAR,
+            Material.IRON_SPEAR,
+            Material.GOLDEN_SPEAR,
+            Material.DIAMOND_SPEAR,
+            Material.NETHERITE_SPEAR
 	};
 
     public static final Material[] EFFICIENT_TOOLS = {
