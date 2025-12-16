@@ -5,6 +5,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.World;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,6 +30,8 @@ public class PortalEnterListener implements Listener {
                 plugin.getConfig().getInt("portal-invincibility") * 20,
                 255
             ));
+
+            //event.getPlayer().getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue();
 
             // If plugin should give portal alerts, give portal alerts
             if (plugin.getConfig().getBoolean("portal-alerts")) {
