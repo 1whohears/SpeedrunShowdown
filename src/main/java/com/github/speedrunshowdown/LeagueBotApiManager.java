@@ -55,16 +55,11 @@ public class LeagueBotApiManager {
                     +"Failed to report a match. Plugin does not know the current set id!");
             return false;
         }
-        String uuid1, uuid2;
         int score1, score2;
         if (winningTeamName.equals(player1Team)) {
-            uuid1 = player1UUID;
-            uuid2 = player2UUID;
             score1 = winningScore;
             score2 = losingScore;
         } else if (winningTeamName.equals(player2Team)) {
-            uuid1 = player2UUID;
-            uuid2 = player1UUID;
             score1 = losingScore;
             score2 = winningScore;
         } else {
@@ -75,7 +70,7 @@ public class LeagueBotApiManager {
 
         String leagueBotURL = getRequestURL("/league/reportadmin");
         leagueBotURL += "&setId="+setId+"&updateRanks=true";
-        leagueBotURL += "&player1UUID="+uuid1+"&player2UUID="+uuid2;
+        leagueBotURL += "&player1UUID="+player1UUID+"&player2UUID="+player2UUID;
         leagueBotURL += "&player1Score="+score1+"&player2Score="+score2;
 
         String responseStr = getResponse(leagueBotURL, null);
