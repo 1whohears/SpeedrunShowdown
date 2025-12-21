@@ -1028,6 +1028,7 @@ public class Constants {
 		Material.FISHING_ROD,
             Material.BUCKET,
 			Material.WATER_BUCKET,
+            Material.MILK_BUCKET,
 			Material.MACE,
             Material.COPPER_PICKAXE,
             Material.COPPER_AXE,

@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.Team;
+import org.jetbrains.annotations.NotNull;
 
 public class PlayerDeathListener implements Listener {
     @EventHandler
@@ -137,8 +138,12 @@ public class PlayerDeathListener implements Listener {
 
                     // Add each item that is a tool to the list
                     for (ItemStack item : player.getInventory().getContents()) {
-                        if (item != null && isPersistentTool(item.getType())) {
+                        if (item == null) continue;
+                        if (isPersistentTool(item.getType())) {
                             tools.add(item);
+                        } else if (isBucket(item)) {
+                            tools.add(ItemStack.of(Material.BUCKET, 1));
+                            event.getDrops().remove(item);
                         }
                     }
 
@@ -165,5 +170,10 @@ public class PlayerDeathListener implements Listener {
             }
         }
         return false;
+    }
+
+    public static boolean isBucket(@NotNull ItemStack item) {
+        if (item.getType().isAir()) return false;
+        return item.getType().name().endsWith("_BUCKET");
     }
 }
