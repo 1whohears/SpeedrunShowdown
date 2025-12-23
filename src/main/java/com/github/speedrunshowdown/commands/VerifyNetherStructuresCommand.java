@@ -12,7 +12,7 @@ public class VerifyNetherStructuresCommand implements CommandExecutor {
                              @NotNull String s, @NotNull String @NotNull [] strings) {
         if (StartCommand.verifyNetherStructures()) {
             sender.getServer().broadcastMessage(ChatColor.GREEN
-                    +"The Nether has at least 1 Fortress and at least 1 Bastion inside the world border!");
+                    +"The Nether has at least 1 Fortress and at least 1 Bastian inside the world border!");
         } else {
             sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE
                     +"The Nether is missing a required Structure! Please use a different seed!");

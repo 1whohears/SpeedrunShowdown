@@ -9,7 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.generator.structure.StructureType;
+import org.bukkit.generator.structure.Structure;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.util.StructureSearchResult;
@@ -20,10 +20,10 @@ public class LocStrucCommand implements CommandExecutor {
     public static final int CHUNKS_TO_CHECK = 4000;
     public static final int STRUCTURE_VERIFY_RANGE = 250;
 
-    private final StructureType structure;
+    private final Structure structure;
     private final String structure_name;
 
-    public LocStrucCommand(StructureType structure, String structure_name) {
+    public LocStrucCommand(Structure structure, String structure_name) {
         this.structure = structure;
         this.structure_name = structure_name;
     }
@@ -70,11 +70,11 @@ public class LocStrucCommand implements CommandExecutor {
         return true;
     }
     @Nullable
-    public static StructureSearchResult multiFindStructure(Player player, StructureType structure) {
+    public static StructureSearchResult multiFindStructure(Player player, Structure structure) {
         return multiFindStructure(player.getWorld(), player.getLocation(), structure);
     }
     @Nullable
-    public static StructureSearchResult multiFindStructure(World world, Location playerLocation, StructureType structure) {
+    public static StructureSearchResult multiFindStructure(World world, Location playerLocation, Structure structure) {
         boolean worldbordercheck = SpeedrunShowdown.getInstance().getConfig().getBoolean("world-border");
         StructureSearchResult result = findStructure(world, playerLocation, playerLocation, worldbordercheck, structure);
         if (result == null && worldbordercheck) {
@@ -103,12 +103,12 @@ public class LocStrucCommand implements CommandExecutor {
     }
     @Nullable
     public static StructureSearchResult findStructure(Player player, Location lookPos,
-                                                      boolean worldbordercheck, StructureType structure) {
+                                                      boolean worldbordercheck, Structure structure) {
         return findStructure(player.getWorld(), player.getLocation(), lookPos, worldbordercheck, structure);
     }
     @Nullable
     public static StructureSearchResult findStructure(World world, Location playerLoc, Location lookPos,
-                                                      boolean worldbordercheck, StructureType structure) {
+                                                      boolean worldbordercheck, Structure structure) {
         StructureSearchResult result = null;
         double mindist = Double.MAX_VALUE;
         for (int i = 0; i < 10; ++i) {
