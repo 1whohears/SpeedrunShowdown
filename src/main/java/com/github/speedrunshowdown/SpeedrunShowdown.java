@@ -11,7 +11,7 @@ import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
-import org.bukkit.generator.structure.Structure;
+import org.bukkit.generator.structure.StructureType;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.meta.FireworkMeta;
@@ -75,8 +75,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getCommand("givecompass").setExecutor(new GiveCompassCommand());
         getCommand("givearmor").setExecutor(new GiveArmorCommand());
         getCommand("win").setExecutor(new WinCommand());
-        getCommand("locatefortress").setExecutor(new LocStrucCommand(Structure.FORTRESS, "Nether Fortress"));
-        getCommand("locatebastion").setExecutor(new LocStrucCommand(Structure.BASTION_REMNANT, "Bastion Remnant"));
+        getCommand("locatefortress").setExecutor(new LocStrucCommand(StructureType.FORTRESS, "Nether Fortress"));
+        getCommand("locatebastion").setExecutor(new LocStrucCommand(Constants.BASTION_REMNANT, "Bastion Remnant"));
         getCommand("checknether").setExecutor(new VerifyNetherStructuresCommand());
         getCommand("listprogressionpoints").setExecutor(new ProgressionPoints());
         getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
@@ -112,9 +112,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             progressionPointsManager = new ProgressionPointsManager();
             respawnFixerManager = new RespawnFixerManager();
             leagueBotApiManager = new LeagueBotApiManager();
-            getOverworld().setGameRule(GameRule.LOCATOR_BAR, false);
-            getTheNether().setGameRule(GameRule.LOCATOR_BAR, false);
-            getTheEnd().setGameRule(GameRule.LOCATOR_BAR, false);
+            getOverworld().setGameRule(GameRules.LOCATOR_BAR, false);
+            getTheNether().setGameRule(GameRules.LOCATOR_BAR, false);
+            getTheEnd().setGameRule(GameRules.LOCATOR_BAR, false);
         });
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             // Set player gamemode to adventure if the game hasn't started yet
