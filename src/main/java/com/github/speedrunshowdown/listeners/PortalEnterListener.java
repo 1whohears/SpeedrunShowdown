@@ -26,12 +26,12 @@ public class PortalEnterListener implements Listener {
         if (plugin.isRunning() && player.getGameMode() != GameMode.SPECTATOR) {
             // Give player portal invincibility
             event.getPlayer().addPotionEffect(new PotionEffect(
-                PotionEffectType.RESISTANCE,
-                plugin.getConfig().getInt("portal-invincibility") * 20,
-                255
+                    PotionEffectType.RESISTANCE,
+                    plugin.getConfig().getInt("portal-invincibility") * 20,
+                    255
             ));
 
-            //event.getPlayer().getAttribute(Attribute.KNOCKBACK_RESISTANCE).setBaseValue();
+            plugin.getRespawnFixerManager().tempDisableKB(event.getPlayer());
 
             // If plugin should give portal alerts, give portal alerts
             if (plugin.getConfig().getBoolean("portal-alerts")) {

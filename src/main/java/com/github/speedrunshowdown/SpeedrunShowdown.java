@@ -219,6 +219,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         if (getConfig().getBoolean("permanent-potions")) {
             permanentPotions();
         }
+
+        getRespawnFixerManager().tick();
     }
 
     public void start() {
