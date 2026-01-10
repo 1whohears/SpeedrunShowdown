@@ -38,6 +38,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private boolean destroyedEndCrystalsInSuddenDeath = false;
     private int taskId;
     private int timer;
+    private long startTime;
 
     private ScoreboardManager scoreboardManager;
     private WorldBorderManager worldBorderManager;
@@ -215,6 +216,18 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             }
         }
 
+        if (running) {
+            int drawMinutes = getConfig().getInt("draw-time", 45);
+            int suddenDeathMinutes = getConfig().getInt("sudden-death-time", 30);
+            if (drawMinutes < suddenDeathMinutes) drawMinutes = suddenDeathMinutes + 15;
+            int drawTime = drawMinutes * 60 * 20;
+            long ticksUntilDraw = Math.max(-(getOverworld().getGameTime() - startTime - drawTime), 0);
+            if (ticksUntilDraw == 0) {
+                // TODO DECLARE DRAW
+                // TODO announce how long until a draw occurs in chat
+            }
+        }
+
         // If plugin should give permanent potions, give permanent potions
         if (getConfig().getBoolean("permanent-potions")) {
             permanentPotions();
@@ -229,6 +242,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             getServer().broadcastMessage(ChatColor.YELLOW + "Game already running");
             return;
         }
+        startTime = getOverworld().getGameTime();
+
         // Reset Sun
         getOverworld().setTime(1000);
 
