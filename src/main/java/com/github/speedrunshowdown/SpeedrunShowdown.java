@@ -39,6 +39,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private int taskId;
     private int timer;
     private long startTime;
+    private boolean gameEnded = false;
 
     private ScoreboardManager scoreboardManager;
     private WorldBorderManager worldBorderManager;
@@ -216,29 +217,52 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             }
         }
 
-        if (running && !getLeagueBotApiManager().isMatchReported()) {
-            int drawMinutes = getConfig().getInt("draw-time", 45);
-            int suddenDeathMinutes = getConfig().getInt("sudden-death-time", 30);
-            if (drawMinutes < suddenDeathMinutes) drawMinutes = suddenDeathMinutes + 15;
-            int drawTime = drawMinutes * 60 * 20;
-            long ticksUntilDraw = Math.max(-(getOverworld().getGameTime() - startTime - drawTime), 0);
-            if (ticksUntilDraw == 0) {
-                String team1Name = leagueBotApiManager.getPlayer1Team();
-                String team2Name = leagueBotApiManager.getPlayer2Team();
-                if (!team1Name.equals(team2Name)) {
-                    int team1Score = progressionPointsManager.getNumPoints(team1Name);
-                    int team2Score = progressionPointsManager.getNumPoints(team2Name);
-                    if (team1Score == team2Score) {
-                        for (Player player : getServer().getOnlinePlayers()) {
-                            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1, 1);
-                            player.sendTitle("DRAW!", team1Score+" - "+team1Score+" Progression Points!",
-                                    20, 140, 40
-                            );
-                        }
-                        progressionPointsManager.onGameEnd(null);
-                        leagueBotApiManager.reportMatch("", team1Score, team1Score);
-                        return;
+        if (running && !gameEnded) {
+            handleDrawSystem();
+        }
+
+        // If plugin should give permanent potions, give permanent potions
+        if (getConfig().getBoolean("permanent-potions")) {
+            permanentPotions();
+        }
+
+        getRespawnFixerManager().tick();
+    }
+
+    private void handleDrawSystem() {
+        int drawMinutes = getConfig().getInt("draw-time", 45);
+        int suddenDeathMinutes = getConfig().getInt("sudden-death-time", 30);
+        if (drawMinutes < suddenDeathMinutes) drawMinutes = suddenDeathMinutes + 15;
+        int drawTime = drawMinutes * 60 * 20;
+        long ticksUntilDraw = Math.max(-(getOverworld().getGameTime() - startTime - drawTime), 0);
+        if (ticksUntilDraw == 0) {
+            String team1Name = leagueBotApiManager.getPlayer1Team();
+            String team2Name = leagueBotApiManager.getPlayer2Team();
+            if (team1Name.equals(team2Name)) {
+                for (Player player : getServer().getOnlinePlayers()) {
+                    Team team = getScoreboardManager().getTeam(player);
+                    if (team == null) continue;
+                    if (team1Name.isEmpty()) team1Name = team.getName();
+                    else if (!team.getName().equals(team1Name)) {
+                        team2Name = team.getName();
+                        break;
                     }
+                }
+            }
+            if (!team1Name.equals(team2Name)) {
+                int team1Score = progressionPointsManager.getNumPoints(team1Name);
+                int team2Score = progressionPointsManager.getNumPoints(team2Name);
+                if (team1Score == team2Score) {
+                    for (Player player : getServer().getOnlinePlayers()) {
+                        player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1, 1);
+                        player.sendTitle("DRAW!", team1Score+" - "+team1Score+" Progression Points!",
+                                20, 140, 40
+                        );
+                    }
+                    progressionPointsManager.onGameEnd(null);
+                    leagueBotApiManager.reportMatch("", team1Score, team1Score);
+                    gameEnded = true;
+                } else {
                     Team winningTeam;
                     int winningScore, losingScore;
                     if (team1Score > team2Score) {
@@ -250,30 +274,23 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                         winningScore = team2Score;
                         losingScore = team1Score;
                     }
-                    win(winningTeam, winningScore+" - "+losingScore+" Progression Points!");
+                    win(winningTeam, winningScore + " - " + losingScore + " Progression Points!");
                 }
-            } else {
-                int secondsUntilDraw = (int) (ticksUntilDraw * 0.05);
-                for (int warningTime : getConfig().getIntegerList("warning-times")) {
-                    if (secondsUntilDraw == warningTime) {
-                        getServer().broadcastMessage(
-                                (secondsUntilDraw <= 10 ? ChatColor.RED : ChatColor.YELLOW) + "" +
-                                        secondsUntilDraw + " seconds before GAME ENDS by progression points!"
-                        );
-                        for (Player player : getServer().getOnlinePlayers()) {
-                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
-                        }
+            }
+        } else {
+            int secondsUntilDraw = (int) (ticksUntilDraw * 0.05);
+            for (int warningTime : getConfig().getIntegerList("warning-times")) {
+                if (secondsUntilDraw == warningTime) {
+                    getServer().broadcastMessage(
+                            (secondsUntilDraw <= 10 ? ChatColor.RED : ChatColor.YELLOW) + "" +
+                                    secondsUntilDraw + " seconds before GAME ENDS by progression points!"
+                    );
+                    for (Player player : getServer().getOnlinePlayers()) {
+                        player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
                     }
                 }
             }
         }
-
-        // If plugin should give permanent potions, give permanent potions
-        if (getConfig().getBoolean("permanent-potions")) {
-            permanentPotions();
-        }
-
-        getRespawnFixerManager().tick();
     }
 
     public void start() {
@@ -298,6 +315,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Set not sudden death
         suddenDeath = false;
+
+        // Set game not ended
+        gameEnded = false;
 
         // Broadcast starting game
         getServer().broadcastMessage(ChatColor.GREEN + "Starting game!");
@@ -680,6 +700,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         progressionPointsManager.onGameEnd(team);
         if (team != null) leagueBotApiManager.reportMatch(team.getName(), 100, 0);
+        gameEnded = true;
     }
 
     public void randomize() {
