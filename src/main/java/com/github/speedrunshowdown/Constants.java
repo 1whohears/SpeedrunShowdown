@@ -1,8 +1,7 @@
 package com.github.speedrunshowdown;
 
 import org.bukkit.Material;
-import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
+import org.bukkit.generator.structure.Structure;
 import org.bukkit.generator.structure.StructureType;
 
 import java.util.HashMap;
@@ -11,7 +10,7 @@ public class Constants {
 	public static final int ENDER_DRAGON_SUDDEN_DEATH_HEALTH = 50; // default is 20
 	public static final double SUDDEN_DEATH_SPAWN_RADIUS = 21.5; // blocks
 
-    public static final StructureType BASTION_REMNANT = Registry.STRUCTURE_TYPE.get(NamespacedKey.minecraft("bastion_remnant"));
+    public static final StructureType BASTION_REMNANT = Structure.BASTION_REMNANT.getStructureType();
 
     public static final Material[] ITEMS = {
 		Material.STONE,
