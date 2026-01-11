@@ -56,7 +56,10 @@ public class LeagueBotApiManager {
             return false;
         }
         int score1, score2;
-        if (winningTeamName.equals(player1Team)) {
+        if (winningScore == losingScore) {
+            score1 = winningScore;
+            score2 = losingScore;
+        } else if (winningTeamName.equals(player1Team)) {
             score1 = winningScore;
             score2 = losingScore;
         } else if (winningTeamName.equals(player2Team)) {
@@ -347,6 +350,18 @@ public class LeagueBotApiManager {
         this.player2Team = player2Team;
         matchReported = false;
         return true;
+    }
+
+    public boolean isMatchReported() {
+        return matchReported;
+    }
+
+    public String getPlayer1Team() {
+        return player1Team;
+    }
+
+    public String getPlayer2Team() {
+        return player2Team;
     }
 
 }

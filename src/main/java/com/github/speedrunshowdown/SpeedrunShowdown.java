@@ -216,15 +216,55 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             }
         }
 
-        if (running) {
+        if (running && !getLeagueBotApiManager().isMatchReported()) {
             int drawMinutes = getConfig().getInt("draw-time", 45);
             int suddenDeathMinutes = getConfig().getInt("sudden-death-time", 30);
             if (drawMinutes < suddenDeathMinutes) drawMinutes = suddenDeathMinutes + 15;
             int drawTime = drawMinutes * 60 * 20;
             long ticksUntilDraw = Math.max(-(getOverworld().getGameTime() - startTime - drawTime), 0);
             if (ticksUntilDraw == 0) {
-                // TODO DECLARE DRAW
-                // TODO announce how long until a draw occurs in chat
+                String team1Name = leagueBotApiManager.getPlayer1Team();
+                String team2Name = leagueBotApiManager.getPlayer2Team();
+                if (!team1Name.equals(team2Name)) {
+                    int team1Score = progressionPointsManager.getNumPoints(team1Name);
+                    int team2Score = progressionPointsManager.getNumPoints(team2Name);
+                    if (team1Score == team2Score) {
+                        for (Player player : getServer().getOnlinePlayers()) {
+                            player.playSound(player.getLocation(), Sound.UI_TOAST_CHALLENGE_COMPLETE, 1, 1);
+                            player.sendTitle("DRAW!", team1Score+" - "+team1Score+" Progression Points!",
+                                    20, 140, 40
+                            );
+                        }
+                        progressionPointsManager.onGameEnd(null);
+                        leagueBotApiManager.reportMatch("", team1Score, team1Score);
+                        return;
+                    }
+                    Team winningTeam;
+                    int winningScore, losingScore;
+                    if (team1Score > team2Score) {
+                        winningTeam = getScoreboardManager().getScoreboard().getTeam(team1Name);
+                        winningScore = team1Score;
+                        losingScore = team2Score;
+                    } else {
+                        winningTeam = getScoreboardManager().getScoreboard().getTeam(team2Name);
+                        winningScore = team2Score;
+                        losingScore = team1Score;
+                    }
+                    win(winningTeam, winningScore+" - "+losingScore+" Progression Points!");
+                }
+            } else {
+                int secondsUntilDraw = (int) (ticksUntilDraw * 0.05);
+                for (int warningTime : getConfig().getIntegerList("warning-times")) {
+                    if (secondsUntilDraw == warningTime) {
+                        getServer().broadcastMessage(
+                                (secondsUntilDraw <= 10 ? ChatColor.RED : ChatColor.YELLOW) + "" +
+                                        secondsUntilDraw + " seconds before GAME ENDS by progression points!"
+                        );
+                        for (Player player : getServer().getOnlinePlayers()) {
+                            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
+                        }
+                    }
+                }
             }
         }
 
