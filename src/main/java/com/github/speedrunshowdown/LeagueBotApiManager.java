@@ -270,9 +270,9 @@ public class LeagueBotApiManager {
         return null;
     }
 
-    public boolean linkDiscordAccount(CommandSender sender, Player player, String discordUsername) {
+    public boolean linkDiscordAccount(CommandSender sender, Player player, int linkCode) {
         String leagueBotURL = getRequestURL("/league/link/minecraft/player");
-        leagueBotURL += "&mcUUID="+player.getUniqueId()+"&discordUsername="+discordUsername;
+        leagueBotURL += "&mcUUID="+player.getUniqueId()+"&linkCode="+linkCode;
 
         String responseStr = getResponse(leagueBotURL, sender);
         if (responseStr == null) return false;
