@@ -3,6 +3,7 @@ package com.github.speedrunshowdown;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
@@ -20,6 +21,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 
 public class LeagueBotApiManager {
 
@@ -76,16 +79,14 @@ public class LeagueBotApiManager {
         leagueBotURL += "&player1UUID="+player1UUID+"&player2UUID="+player2UUID;
         leagueBotURL += "&player1Score="+score1+"&player2Score="+score2;
 
-        String responseStr = getResponse(leagueBotURL, null);
-        if (responseStr == null) return false;
-        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
-
-        if (response.has("error")) {
-            plugin.getServer().broadcastMessage(ChatColor.RED+response.get("error").getAsString());
-            return false;
-        }
-        plugin.getServer().broadcastMessage(ChatColor.GREEN+response.get("result").getAsString());
-        matchReported = true;
+        handleResponseAsync(leagueBotURL, null, response -> {
+            if (response.has("error")) {
+                plugin.getServer().broadcastMessage(ChatColor.RED + response.get("error").getAsString());
+                return;
+            }
+            plugin.getServer().broadcastMessage(ChatColor.GREEN + response.get("result").getAsString());
+            matchReported = true;
+        });
 
         return true;
     }
@@ -126,39 +127,37 @@ public class LeagueBotApiManager {
         leagueBotURL += "&team1MCUUIDList="+getMCUUIDList(team1Players);
         leagueBotURL += "&team2MCUUIDList="+getMCUUIDList(team2Players);
 
-        String responseStr = getResponse(leagueBotURL, sender);
-        if (responseStr == null) return false;
-        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
+        handleResponseAsync(leagueBotURL, sender, response -> {
+            List<Player> allPlayers = new ArrayList<>(team1Players);
+            allPlayers.addAll(team2Players);
 
-        List<Player> allPlayers = new ArrayList<>(team1Players);
-        allPlayers.addAll(team2Players);
-
-        if (response.has("error")) {
-            String error = ChatColor.RED+response.get("error").getAsString();
-            if (response.has("badUUID")) {
-                String badUUID = response.get("badUUID").getAsString();
-                Player badPlayer = getPlayerInList(badUUID, allPlayers);
-                String name = "Unknown player";
-                if (badPlayer != null) name = badPlayer.getName();
-                error += " "+name;
+            if (response.has("error")) {
+                String error = ChatColor.RED + response.get("error").getAsString();
+                if (response.has("badUUID")) {
+                    String badUUID = response.get("badUUID").getAsString();
+                    Player badPlayer = getPlayerInList(badUUID, allPlayers);
+                    String name = "Unknown player";
+                    if (badPlayer != null) name = badPlayer.getName();
+                    error += " " + name;
+                }
+                sender.sendMessage(error);
+                return;
             }
-            sender.sendMessage(error);
-            return false;
-        }
-        sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
+            sender.sendMessage(ChatColor.GREEN + response.get("result").getAsString());
 
-        int setId = response.get("set_id").getAsInt();
-        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId
-                +" | "+team1.getName()+" vs "+team2.getName()
-                +" | has been created and will begin shortly!");
-        for (Player player : allPlayers) {
-            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-        }
-        setCurrentSetParameters(setId,
-                team1Players.getFirst().getUniqueId()+"",
-                team2Players.getFirst().getUniqueId()+"",
-                team1Name, team2Name
-        );
+            int setId = response.get("set_id").getAsInt();
+            sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "Set " + setId
+                    + " | " + team1.getName() + " vs " + team2.getName()
+                    + " | has been created and will begin shortly!");
+            for (Player player : allPlayers) {
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            }
+            setCurrentSetParameters(setId,
+                    team1Players.getFirst().getUniqueId() + "",
+                    team2Players.getFirst().getUniqueId() + "",
+                    team1Name, team2Name
+            );
+        });
 
         return true;
     }
@@ -192,38 +191,36 @@ public class LeagueBotApiManager {
         leagueBotURL += "&team1Name="+team1Name+"&team2Name="+team2Name;
         leagueBotURL += "&mcUUIDList="+getMCUUIDList(players);
 
-        String responseStr = getResponse(leagueBotURL, sender);
-        if (responseStr == null) return false;
-        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
-
-        if (response.has("error")) {
-            String error = ChatColor.RED+response.get("error").getAsString();
-            if (response.has("badUUID")) {
-                String badUUID = response.get("badUUID").getAsString();
-                Player badPlayer = getPlayerInList(badUUID, players);
-                String name = "Unknown player";
-                if (badPlayer != null) name = badPlayer.getName();
-                error += " "+name;
+        handleResponseAsync(leagueBotURL, sender, response -> {
+            if (response.has("error")) {
+                String error = ChatColor.RED + response.get("error").getAsString();
+                if (response.has("badUUID")) {
+                    String badUUID = response.get("badUUID").getAsString();
+                    Player badPlayer = getPlayerInList(badUUID, players);
+                    String name = "Unknown player";
+                    if (badPlayer != null) name = badPlayer.getName();
+                    error += " " + name;
+                }
+                sender.sendMessage(error);
+                return;
             }
-            sender.sendMessage(error);
-            return false;
-        }
-        sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
+            sender.sendMessage(ChatColor.GREEN + response.get("result").getAsString());
 
-        int setId = response.get("set_id").getAsInt();
-        JsonObject team1 = response.getAsJsonObject("team1");
-        JsonObject team2 = response.getAsJsonObject("team2");
+            int setId = response.get("set_id").getAsInt();
+            JsonObject team1 = response.getAsJsonObject("team1");
+            JsonObject team2 = response.getAsJsonObject("team2");
 
-        String player1UUID = handleTeamResponse(team1, players, team1Name);
-        String player2UUID = handleTeamResponse(team2, players, team2Name);
+            String player1UUID = handleTeamResponse(team1, players, team1Name);
+            String player2UUID = handleTeamResponse(team2, players, team2Name);
 
-        sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE+"Set "+setId
-                +" | "+team1.get("name").getAsString()+" vs "+team2.get("name").getAsString()
-                +" | has been created and will begin shortly!");
-        for (Player player : players) {
-            player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-        }
-        setCurrentSetParameters(setId, player1UUID, player2UUID, team1Name, team2Name);
+            sender.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "Set " + setId
+                    + " | " + team1.get("name").getAsString() + " vs " + team2.get("name").getAsString()
+                    + " | has been created and will begin shortly!");
+            for (Player player : players) {
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            }
+            setCurrentSetParameters(setId, player1UUID, player2UUID, team1Name, team2Name);
+        });
 
         return true;
     }
@@ -274,15 +271,13 @@ public class LeagueBotApiManager {
         String leagueBotURL = getRequestURL("/league/link/minecraft/player");
         leagueBotURL += "&mcUUID="+player.getUniqueId()+"&linkCode="+linkCode;
 
-        String responseStr = getResponse(leagueBotURL, sender);
-        if (responseStr == null) return false;
-        JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
-
-        if (response.has("error")) {
-            sender.sendMessage(ChatColor.RED+response.get("error").getAsString());
-            return false;
-        }
-        sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
+        handleResponseAsync(leagueBotURL, sender, response -> {
+            if (response.has("error")) {
+                sender.sendMessage(ChatColor.RED+response.get("error").getAsString());
+                return;
+            }
+            sender.sendMessage(ChatColor.GREEN+response.get("result").getAsString());
+        });
 
         return true;
     }
@@ -294,6 +289,23 @@ public class LeagueBotApiManager {
         String leagueBotURL = plugin.getConfig().getString("league_bot_url");
         leagueBotURL += type+"?apikey="+apikey+"&guildId="+guildId+"&leagueName="+leagueName;
         return leagueBotURL;
+    }
+
+    public static void handleResponseAsync(String requestURL, @Nullable CommandSender sender,
+                                           @NotNull Consumer<JsonObject> responseHandler) {
+        CompletableFuture.supplyAsync(() -> {
+            try {
+                return getResponse(requestURL, sender);
+            } catch (Exception e) {
+                return null;
+            }
+        }).thenAccept(responseStr -> {
+            Bukkit.getScheduler().runTask(SpeedrunShowdown.getInstance(), () -> {
+                if (responseStr == null) return;
+                JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
+                responseHandler.accept(response);
+            });
+        });
     }
 
     @Nullable
@@ -309,9 +321,11 @@ public class LeagueBotApiManager {
             response = getBufferedReader(con);
             con.disconnect();
         } catch (IOException e) {
-            String msg = ChatColor.RED+"Failed: "+e.getMessage();
-            if (sender != null) sender.sendMessage(msg);
-            else SpeedrunShowdown.getInstance().getServer().broadcastMessage(msg);
+            Bukkit.getScheduler().runTask(SpeedrunShowdown.getInstance(), () -> {
+                String msg = ChatColor.RED + "Failed: " + e.getMessage();
+                if (sender != null) sender.sendMessage(msg);
+                else SpeedrunShowdown.getInstance().getServer().broadcastMessage(msg);
+            });
             e.printStackTrace();
             return null;
         }
