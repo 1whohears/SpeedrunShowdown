@@ -30,6 +30,7 @@ public class LeagueBotApiManager {
 
     private final SpeedrunShowdown plugin;
 
+    private int currentQueueId = -1;
     private int currentSetId = -1;
     private String player1UUID = "";
     private String player2UUID = "";
@@ -376,6 +377,14 @@ public class LeagueBotApiManager {
 
     public String getPlayer2Team() {
         return player2Team;
+    }
+
+    public int getCurrentQueueId() {
+        return currentQueueId;
+    }
+
+    public void setCurrentQueueId(int currentQueueId) {
+        this.currentQueueId = currentQueueId;
     }
 
 }
