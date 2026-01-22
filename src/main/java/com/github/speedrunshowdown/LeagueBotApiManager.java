@@ -30,6 +30,7 @@ public class LeagueBotApiManager {
 
     private final SpeedrunShowdown plugin;
 
+    private QueueState queueState = QueueState.NONE;
     private int currentQueueId = -1;
     private int currentSetId = -1;
     private String player1UUID = "";
@@ -38,8 +39,104 @@ public class LeagueBotApiManager {
     private String player2Team = "";
     private boolean matchReported = false;
 
+    private final @NotNull Consumer<JsonObject> queueResponseHandler = response -> {
+        SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
+        if (response.has("error")) {
+            plugin.getServer().broadcastMessage(ChatColor.RED + response.get("error").getAsString());
+            return;
+        }
+        JsonObject queueData = response.getAsJsonObject("queue");
+        QueueState queueState = readQueueState(queueData.get("queueState").getAsString());
+        plugin.getLeagueBotApiManager().queueState = queueState;
+        if (queueState == QueueState.CLOSED) {
+            if (currentSetId == -1) {
+                currentSetId = queueData.get("resolvedSetId").getAsInt();
+                handleSetResponse(res -> {
+                    JsonObject con1Data = res.getAsJsonObject("contestant1");
+                    JsonObject con2Data = res.getAsJsonObject("contestant2");
+                    // TODO create random color teams
+                    String team1Name = "redstone";
+                    String team2Name = "emerald";
+                    String player1UUID = handleContestantResponse(team1Name, con1Data);
+                    String player2UUID = handleContestantResponse(team2Name, con2Data);
+                    if (player1UUID == null || player2UUID == null) {
+                        plugin.getServer().broadcastMessage(ChatColor.RED+"Could not start match because " +
+                                "there is a player that does not have a linked discord account!");
+                        return;
+                    }
+                    plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "Set " + currentSetId
+                            + " | " + team1Name + " vs " + team2Name
+                            + " | has been created and will begin shortly!");
+                    for (Player player : plugin.getServer().getOnlinePlayers()) {
+                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+                    }
+                    setCurrentSetParameters(currentSetId, player1UUID, player2UUID, team1Name, team2Name);
+                    Bukkit.getScheduler().runTaskLater(plugin, plugin::start, 100);
+                });
+            }
+        }
+    };
+
+    @Nullable
+    private String handleContestantResponse(String mcTeamName, JsonObject conData) {
+        // TODO go through all members of the teams and use team.addEntry(UUID String)
+        Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
+        Team mcTeam = scoreboard.getTeam(mcTeamName);
+        if (mcTeam == null) return null;
+        String type = conData.get("type").getAsString();
+        if (type.equals("INDIVIDUAL")) {
+            return handleUser(mcTeam, conData);
+        } else if (type.equals("TEAM")) {
+            String uuid = null;
+            JsonArray teamMembers = conData.getAsJsonArray("team_members");
+            for (int i = 0; i < teamMembers.size(); ++i) {
+                String id = handleUser(mcTeam, teamMembers.get(i).getAsJsonObject());
+                if (id == null) return null;
+                uuid = id;
+            }
+            return uuid;
+        }
+        return null;
+    }
+
+    @Nullable
+    private String handleUser(@NotNull Team mcTeam, JsonObject userData) {
+        JsonObject extraData = userData.getAsJsonObject("extra_data");
+        if (extraData.has("mcUUID")) {
+            String uuid = extraData.get("mcUUID").getAsString();
+            mcTeam.addEntry(uuid);
+        }
+        return null;
+    }
+
     public LeagueBotApiManager() {
         plugin = SpeedrunShowdown.getInstance();
+    }
+
+    // TODO call queueUpdate
+    public void queueUpdate() {
+        if (currentQueueId == -1) return;
+        handleQueueResponse(queueResponseHandler);
+    }
+
+    public void handleContestantResponse(long contestantId, @NotNull Consumer<JsonObject> responseHandler) {
+        String leagueBotURL = getRequestURL("/league/info/contestant");
+        leagueBotURL += "&contestantId="+contestantId+"&includeFullTeam=true";
+        handleResponseAsync(leagueBotURL, null, responseHandler);
+    }
+
+    public void handleSetResponse(@NotNull Consumer<JsonObject> responseHandler) {
+        if (currentSetId == -1) return;
+        String leagueBotURL = getRequestURL("/league/info/set");
+        leagueBotURL += "&setId="+currentSetId+"&includeContestants=true&includeFullTeam=true";
+        handleResponseAsync(leagueBotURL, null, responseHandler);
+    }
+
+    public void handleQueueResponse(@NotNull Consumer<JsonObject> responseHandler) {
+        if (currentQueueId == -1) return;
+        String leagueBotURL = getRequestURL("/league/queue/state");
+        leagueBotURL += "&queueId="+currentQueueId;
+        handleResponseAsync(leagueBotURL, null, responseHandler);
     }
 
     public boolean reportMatch(String winningTeamName, int winningScore, int losingScore) {
@@ -358,6 +455,7 @@ public class LeagueBotApiManager {
     public boolean setCurrentSetParameters(int id, String player1UUID, String player2UUID,
                                            String player1Team, String player2Team) {
         if (plugin.isRunning()) return false;
+        if (currentQueueId != -1) return false;
         this.currentSetId = id;
         this.player1UUID = player1UUID;
         this.player2UUID = player2UUID;
@@ -385,6 +483,24 @@ public class LeagueBotApiManager {
 
     public void setCurrentQueueId(int currentQueueId) {
         this.currentQueueId = currentQueueId;
+    }
+
+    public enum QueueState {
+        NONE,
+        ENROLL,
+        FINAL_ENROLL_TICK,
+        PREGAME,
+        PREGAME_SUBS,
+        FINAL_PREGAME_TICK,
+        CLOSED
+    }
+
+    public static QueueState readQueueState(String name) {
+        return QueueState.valueOf(name);
+    }
+
+    public QueueState getQueueState() {
+        return queueState;
     }
 
 }
