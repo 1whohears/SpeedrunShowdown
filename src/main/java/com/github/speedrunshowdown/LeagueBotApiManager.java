@@ -27,6 +27,18 @@ import java.util.function.Consumer;
 public class LeagueBotApiManager {
 
     public static final Gson GSON = new Gson();
+    private static final String[] TEAMS = new String[] {
+        "redstone",
+        "crimson",
+        "emerald",
+        "slime",
+        "lapis",
+        "diamond",
+        "gold",
+        "glowstone",
+        "purpur",
+        "chorus"
+    };
 
     private final SpeedrunShowdown plugin;
 
@@ -79,7 +91,6 @@ public class LeagueBotApiManager {
 
     @Nullable
     private String handleContestantResponse(String mcTeamName, JsonObject conData) {
-        // TODO go through all members of the teams and use team.addEntry(UUID String)
         Scoreboard scoreboard = plugin.getServer().getScoreboardManager().getMainScoreboard();
         Team mcTeam = scoreboard.getTeam(mcTeamName);
         if (mcTeam == null) return null;
