@@ -120,7 +120,6 @@ public class LeagueBotApiManager {
         plugin = SpeedrunShowdown.getInstance();
     }
 
-    // TODO call queueUpdate
     public void queueUpdate() {
         if (currentQueueId == -1) return;
         handleQueueResponse(queueResponseHandler);
@@ -488,6 +487,7 @@ public class LeagueBotApiManager {
         return currentQueueId;
     }
 
+    // TODO call setCurrentQueueId
     public void setCurrentQueueId(int currentQueueId) {
         this.currentQueueId = currentQueueId;
     }

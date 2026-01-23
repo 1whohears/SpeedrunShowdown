@@ -54,6 +54,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private int bedExplodeInEndTick = -1;
     private Player bedExplodeInEndPlayer = null;
 
+    private long prevApiUpdateTime = System.currentTimeMillis();
+
     @Override
     public void onEnable() {
         // Get the level name
@@ -85,6 +87,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             commands.registrar().register(LinkDiscordCommand.get());
             commands.registrar().register(AutoTeamMatchCommand.get());
             commands.registrar().register(InGameTeamMatchCommand.get());
+            // TODO create veto command
         });
 
         // Create listeners
@@ -224,6 +227,12 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         // If plugin should give permanent potions, give permanent potions
         if (getConfig().getBoolean("permanent-potions")) {
             permanentPotions();
+        }
+
+        long timeDiff = System.currentTimeMillis() - prevApiUpdateTime;
+        if (!running && timeDiff > 10000) {
+            getLeagueBotApiManager().queueUpdate();
+            prevApiUpdateTime = System.currentTimeMillis();
         }
 
         getRespawnFixerManager().tick();
