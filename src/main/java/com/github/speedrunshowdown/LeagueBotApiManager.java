@@ -406,8 +406,16 @@ public class LeagueBotApiManager {
         }).thenAccept(responseStr -> {
             Bukkit.getScheduler().runTask(SpeedrunShowdown.getInstance(), () -> {
                 if (responseStr == null) return;
-                JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
-                responseHandler.accept(response);
+                try {
+                    JsonObject response = GSON.fromJson(responseStr, JsonObject.class);
+                    responseHandler.accept(response);
+                } catch (Exception e) {
+                    SpeedrunShowdown.getInstance().getServer().broadcastMessage(ChatColor.RED+
+                            "FAILED TO HANDLE RESPONSE: " + e.getMessage());
+                    SpeedrunShowdown.getInstance().getLogger().severe("FAILED TO HANDLE RESPONSE: " +
+                            e.getMessage()+"\n"+responseStr);
+                    e.printStackTrace();
+                }
             });
         });
     }
