@@ -21,23 +21,20 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class LeagueBotApiManager {
 
     public static final Gson GSON = new Gson();
+    public static final Random RANDOM = new Random();
     private static final String[] TEAMS = new String[] {
-        "redstone",
-        "crimson",
-        "emerald",
-        "slime",
-        "lapis",
-        "diamond",
-        "gold",
-        "glowstone",
-        "purpur",
-        "chorus"
+        "redstone", "crimson",
+        "emerald", "slime",
+        "lapis", "diamond",
+        "gold", "glowstone",
+        "purpur", "chorus"
     };
 
     private final SpeedrunShowdown plugin;
@@ -66,9 +63,8 @@ public class LeagueBotApiManager {
                 handleSetResponse(res -> {
                     JsonObject con1Data = res.getAsJsonObject("contestant1");
                     JsonObject con2Data = res.getAsJsonObject("contestant2");
-                    // TODO create random color teams
-                    String team1Name = "redstone";
-                    String team2Name = "emerald";
+                    String team1Name = randomTeam(null);
+                    String team2Name = randomTeam(team1Name);
                     String player1UUID = handleContestantResponse(team1Name, con1Data);
                     String player2UUID = handleContestantResponse(team2Name, con2Data);
                     if (player1UUID == null || player2UUID == null) {
@@ -512,6 +508,28 @@ public class LeagueBotApiManager {
 
     public QueueState getQueueState() {
         return queueState;
+    }
+
+    public static String randomTeam(@Nullable String exclude) {
+        int num = TEAMS.length;
+        if (exclude == null) return TEAMS[RANDOM.nextInt(num)];
+        int excludeIndex = -1;
+        for (int i = 0; i < TEAMS.length; ++i) {
+            if (TEAMS[i].equals(exclude)) {
+                excludeIndex = i;
+                break;
+            }
+        }
+        while (true) {
+            int index = RANDOM.nextInt(num);
+            String name = TEAMS[index];
+            if (excludeIndex != -1) {
+                if (excludeIndex % 2 == 0 && index == excludeIndex+1) continue;
+                else if (excludeIndex % 2 == 1 && index == excludeIndex-1) continue;
+            }
+            if (name.equals(exclude)) continue;
+            return name;
+        }
     }
 
 }
