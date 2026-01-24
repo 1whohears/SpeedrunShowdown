@@ -75,7 +75,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
         // Create commands
         getCommand("start").setExecutor(new StartCommand());
-        getCommand("stop").setExecutor(new StopCommand());
+        getCommand("stopsrsd").setExecutor(new StopCommand());
         getCommand("config").setExecutor(new ConfigCommand());
         getCommand("resume").setExecutor(new ResumeCommand());
         getCommand("suddendeath").setExecutor(new SuddenDeathCommand());

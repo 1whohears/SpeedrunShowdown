@@ -9,10 +9,10 @@ commands:
     description: Start the game
     permission: speedrunshowdown
     usage: /start
-  stop:
+  stopsrsd:
     description: Stop the game
     permission: speedrunshowdown
-    usage: /stop
+    usage: /stopsrsd
   config:
     description: Open config gui
     permission: speedrunshowdown
