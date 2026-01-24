@@ -53,10 +53,6 @@ commands:
     description: See a list of progression points. Who has what, and what is left.
     permission: netherlocate
     usage: /listprogressionpoints
-  resetnewworld:
-    description: Deletes the current world and resets to a new seed!
-    permission: speedrunshowdown
-    usage: /resetnewworld
   createingameteammatch:
     description: Coordinates with the Gamer League Discord Bot to create a match with the in game teams.
     permission: speedrunshowdown
