@@ -155,6 +155,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         ByteArrayDataOutput bado = ByteStreams.newDataOutput();
         bado.writeUTF("OFFLINE");
         getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
+        Bukkit.getScheduler().cancelTasks(this);
+        getServer().getScheduler().cancelTasks(this);
     }
 
     @Override
