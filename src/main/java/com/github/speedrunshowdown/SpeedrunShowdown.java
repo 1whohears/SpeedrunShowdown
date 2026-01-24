@@ -4,6 +4,8 @@ import com.github.speedrunshowdown.border.WorldBorderManager;
 import com.github.speedrunshowdown.commands.*;
 import com.github.speedrunshowdown.gui.ScoreboardManager;
 import com.github.speedrunshowdown.listeners.*;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
@@ -24,11 +26,11 @@ import org.bukkit.scoreboard.Criteria;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Team;
+import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -113,6 +115,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         SRSDPluginMessageListener pml = new SRSDPluginMessageListener();
         getServer().getMessenger().registerIncomingPluginChannel(this, "srsdranked:to_gp/reset_seed", pml);
         getServer().getMessenger().registerIncomingPluginChannel(this, "srsdranked:to_gp/set_queue", pml);
+        getServer().getMessenger().registerOutgoingPluginChannel(this, "srsdranked:from_gp/status");
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
@@ -142,12 +145,16 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             }
         }, 20, 20);
 
-        // TODO tell velocity the server is online
+        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+        bado.writeUTF("READY");
+        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
     }
 
     @Override
     public void onDisable() {
-        // TODO tell velocity the server is offline
+        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+        bado.writeUTF("OFFLINE");
+        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
     }
 
     @Override
@@ -412,7 +419,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             ));
         }
 
-        // TODO tell velocity the match is in progress
+        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+        bado.writeUTF("IN_PROGRESS");
+        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
     }
 
     public void resume(int minutes, int seconds) {
@@ -451,7 +460,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             }
         }
 
-        // TODO tell velocity the match is in progress
+        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+        bado.writeUTF("IN_PROGRESS");
+        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
     }
 
     public void stop() {
@@ -726,7 +737,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         if (team != null) leagueBotApiManager.reportMatch(team.getName(), 100, 0);
         gameEnded = true;
 
-        // TODO tell velocity the game ended
+        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
+        bado.writeUTF("FINISHED");
+        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
     }
 
     public void randomize() {
@@ -901,11 +914,27 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     @Override
     public void onLoad() {
         File file = new File(getDataFolder(), "srsd/reset_seed.txt");
-        if (file.exists()) deleteWorldFolders();
+        if (file.exists()) {
+            deleteWorldFolders();
+            file.delete();
+        }
     }
 
     private void deleteWorldFolders() {
-        // TODO delete world folders
+        File homeFolder = getServer().getWorldContainer();
+        deleteWorld(homeFolder, getOverworldWorldName());
+        deleteWorld(homeFolder, getTheNetherWorldName());
+        deleteWorld(homeFolder, getTheEndWorldName());
+    }
+
+    private void deleteWorld(File homeFolder, String worldName) {
+        File worldFolder = new File(homeFolder, worldName);
+        if (!worldFolder.exists()) return;
+        try {
+            FileUtils.cleanDirectory(worldFolder);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public int getGameplayServerId() {
