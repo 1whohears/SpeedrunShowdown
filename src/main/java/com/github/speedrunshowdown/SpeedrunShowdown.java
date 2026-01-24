@@ -26,8 +26,9 @@ import org.bukkit.scoreboard.Score;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -109,6 +110,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
         getServer().getPluginManager().registerEvents(new SetSpawnListener(), this);
         getServer().getPluginManager().registerEvents(new PlaceBlockListener(), this);
+        SRSDPluginMessageListener pml = new SRSDPluginMessageListener();
+        getServer().getMessenger().registerIncomingPluginChannel(this, "srsdranked:to_gp/reset_seed", pml);
+        getServer().getMessenger().registerIncomingPluginChannel(this, "srsdranked:to_gp/set_queue", pml);
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
@@ -137,6 +141,13 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 getServer().getServerTickManager().setFrozen(false);
             }
         }, 20, 20);
+
+        // TODO tell velocity the server is online
+    }
+
+    @Override
+    public void onDisable() {
+        // TODO tell velocity the server is offline
     }
 
     @Override
@@ -400,6 +411,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 255
             ));
         }
+
+        // TODO tell velocity the match is in progress
     }
 
     public void resume(int minutes, int seconds) {
@@ -437,6 +450,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 player.setGameMode(GameMode.SURVIVAL);
             }
         }
+
+        // TODO tell velocity the match is in progress
     }
 
     public void stop() {
@@ -710,6 +725,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         progressionPointsManager.onGameEnd(team);
         if (team != null) leagueBotApiManager.reportMatch(team.getName(), 100, 0);
         gameEnded = true;
+
+        // TODO tell velocity the game ended
     }
 
     public void randomize() {
@@ -812,18 +829,28 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         return (SpeedrunShowdown) Bukkit.getPluginManager().getPlugin("SpeedrunShowdown");
     }
 
+    public String getOverworldWorldName() {
+        return level_name;
+    }
+
+    public String getTheNetherWorldName() {
+        return level_name+"_nether";
+    }
+
+    public String getTheEndWorldName() {
+        return level_name+"_the_end";
+    }
+
     public World getTheEnd() {
-        // iterate through getServer.getWorlds() ?
-        // world.getEnvironment() == Environment.THE_END
-        return getServer().getWorld(level_name+"_the_end");
+        return getServer().getWorld(getTheEndWorldName());
     }
 
     public World getTheNether() {
-        return getServer().getWorld(level_name+"_nether");
+        return getServer().getWorld(getTheNetherWorldName());
     }
 
     public World getOverworld() {
-        return getServer().getWorld(level_name);
+        return getServer().getWorld(getOverworldWorldName());
     }
 
     public ProgressionPointsManager getProgressionPointManager() {
@@ -853,5 +880,35 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public LeagueBotApiManager getLeagueBotApiManager() {
         return leagueBotApiManager;
+    }
+
+    public void resetSeed() {
+        PrintWriter writer;
+        try {
+            File file = new File(getDataFolder(), "srsd/reset_seed.txt");
+            writer = new PrintWriter(file, "UTF-8");
+
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            System.out.println("Could not write the reset seed flag file!");
+            e.printStackTrace();
+            return;
+        }
+        writer.println("You should delete the world folders and reset the seed.");
+        writer.close();
+        Bukkit.restart();
+    }
+
+    @Override
+    public void onLoad() {
+        File file = new File(getDataFolder(), "srsd/reset_seed.txt");
+        if (file.exists()) deleteWorldFolders();
+    }
+
+    private void deleteWorldFolders() {
+        // TODO delete world folders
+    }
+
+    public int getGameplayServerId() {
+        return getConfig().getInt("gameplay_server_id", -1);
     }
 }

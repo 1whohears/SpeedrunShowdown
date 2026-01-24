@@ -495,7 +495,6 @@ public class LeagueBotApiManager {
         return currentQueueId;
     }
 
-    // TODO call setCurrentQueueId
     public void setCurrentQueueId(int currentQueueId) {
         this.currentQueueId = currentQueueId;
     }
