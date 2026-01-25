@@ -5,10 +5,10 @@ main: com.github.speedrunshowdown.SpeedrunShowdown
 api-version: 1.21.11
 load: STARTUP
 commands:
-  start:
+  startsrsd:
     description: Start the game
     permission: speedrunshowdown
-    usage: /start
+    usage: /startsrsd
   stopsrsd:
     description: Stop the game
     permission: speedrunshowdown

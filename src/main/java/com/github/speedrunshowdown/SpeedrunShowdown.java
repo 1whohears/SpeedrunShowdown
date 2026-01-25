@@ -11,7 +11,6 @@ import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
-import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.generator.structure.StructureType;
@@ -30,7 +29,9 @@ import org.bukkit.scoreboard.Team;
 import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
@@ -50,6 +51,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private ProgressionPointsManager progressionPointsManager;
     private RespawnFixerManager respawnFixerManager;
     private LeagueBotApiManager leagueBotApiManager;
+    private PterodactylApiManager pterodactylApiManager;
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
@@ -62,20 +64,11 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     @Override
     public void onEnable() {
-        // Get the level name
-        Properties props = new Properties();
-        try {
-            props.load(Files.newInputStream(Paths.get("server.properties")));
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        level_name = props.getProperty("level-name");
-
         // Save default config, fails silently if config already exists
         saveDefaultConfig();
 
         // Create commands
-        getCommand("start").setExecutor(new StartCommand());
+        getCommand("startsrsd").setExecutor(new StartCommand());
         getCommand("stopsrsd").setExecutor(new StopCommand());
         getCommand("config").setExecutor(new ConfigCommand());
         getCommand("resume").setExecutor(new ResumeCommand());
@@ -125,6 +118,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             progressionPointsManager = new ProgressionPointsManager();
             respawnFixerManager = new RespawnFixerManager();
             leagueBotApiManager = new LeagueBotApiManager();
+            pterodactylApiManager = new PterodactylApiManager();
             getOverworld().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheNether().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheEnd().setGameRule(GameRules.LOCATOR_BAR, false);
@@ -898,7 +892,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     public void resetSeed() {
         PrintWriter writer;
         try {
-            File file = new File(getDataFolder(), "srsd/reset_seed.txt");
+            File file = new File(getDataFolder(), "reset_seed.txt");
             if (!file.exists()) {
                 file.getParentFile().mkdirs();
                 file.createNewFile();
@@ -911,22 +905,37 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
         writer.println("You should delete the world folders and reset the seed.");
         writer.close();
-        //deleteWorldFolders();
         getServer().getScheduler().runTaskLater(this,
-                () -> {
-                    //deleteWorldFolders();
-                    //Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "restart");
-                    Bukkit.restart();
-                },
-                //Bukkit::restart,
-                40
+                () -> pterodactylApiManager.restartServer(),
+                50
         );
     }
 
     @Override
     public void onLoad() {
-        File file = new File(getDataFolder(), "srsd/reset_seed.txt");
+        updateLevelName();
+        checkResetWorlds();
+    }
+
+    public void updateLevelName() {
+        level_name = readLevelName();
+    }
+
+    public String readLevelName() {
+        Properties props = new Properties();
+        try {
+            props.load(Files.newInputStream(Paths.get("server.properties")));
+            return props.getProperty("level-name");
+        } catch (IOException e) {
+            getLogger().severe("COULD NOT READ level-name");
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void checkResetWorlds() {
+        File file = new File(getDataFolder(), "reset_seed.txt");
         if (file.exists()) {
+            getLogger().warning("RESETTING WORLDS");
             deleteWorldFolders();
             file.delete();
         }
@@ -939,12 +948,13 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         deleteWorld(homeFolder, getTheEndWorldName());
     }
 
-    private void deleteWorld(File homeFolder, String worldName) {
-        Bukkit.unloadWorld(worldName, false);
+    private static void deleteWorld(File homeFolder, String worldName) {
         File worldFolder = new File(homeFolder, worldName);
         if (!worldFolder.exists()) return;
+        Bukkit.unloadWorld(worldName, false);
         deleteDir(worldFolder, "advancements");
         deleteDir(worldFolder, "data");
+        deleteDir(worldFolder, "playerdata");
         deleteDir(worldFolder, "entities");
         deleteDir(worldFolder, "poi");
         deleteDir(worldFolder, "region");
@@ -953,16 +963,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         deleteFile(worldFolder, "level.dat_old");
         deleteFile(worldFolder, "paper-world.yml");
         deleteFile(worldFolder, "session.lock");
-        /*try {
-            FileUtils.cleanDirectory(worldFolder);
-            worldFolder.delete();
-        } catch (IOException e) {
-            getLogger().severe("Failed to delete world folders: "+e.getMessage());
-            e.printStackTrace();
-        }*/
     }
 
-    private void deleteDir(File root, String dir) {
+    private static void deleteDir(File root, String dir) {
         File file = new File(root, dir);
         if (file.exists()) {
             try {
@@ -972,7 +975,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
     }
 
-    private void deleteFile(File root, String name) {
+    private static void deleteFile(File root, String name) {
         File file = new File(root, name);
         if (file.exists()) file.delete();
     }

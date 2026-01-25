@@ -51,3 +51,6 @@ league_bot_guild_id: -1
 league_bot_league_name: "GamerLeague"
 league_bot_api_key: "SuperSecretKey"
 gameplay_server_id: -1
+pterodactyl_api_key: ptlc_bruh
+pterodactyl_server_id: bruh
+pterodactyl_server_url: bruh.com
