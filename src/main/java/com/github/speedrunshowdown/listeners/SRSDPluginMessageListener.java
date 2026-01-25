@@ -7,10 +7,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+
 public class SRSDPluginMessageListener implements PluginMessageListener {
 
     @Override
     public void onPluginMessageReceived(@NotNull String channel, @NotNull Player player, byte @NotNull [] message) {
+        System.out.println("RECEIVED MESSAGE "+channel+" "+Arrays.toString(message));
         if (channel.equals("srsdranked:to_gp/set_queue")) {
             ByteArrayDataInput in = ByteStreams.newDataInput(message);
             int lobbyId = in.readInt();

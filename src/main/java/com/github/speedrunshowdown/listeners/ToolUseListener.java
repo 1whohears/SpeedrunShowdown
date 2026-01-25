@@ -1,5 +1,7 @@
 package com.github.speedrunshowdown.listeners;
 
+import com.github.speedrunshowdown.Constants;
+import com.github.speedrunshowdown.SpeedrunShowdown;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
@@ -7,9 +9,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
-
-import com.github.speedrunshowdown.Constants;
-import com.github.speedrunshowdown.SpeedrunShowdown;
 
 public class ToolUseListener implements Listener {
     @EventHandler

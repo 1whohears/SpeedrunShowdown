@@ -11,6 +11,7 @@ import org.bukkit.*;
 import org.bukkit.World.Environment;
 import org.bukkit.advancement.Advancement;
 import org.bukkit.advancement.AdvancementProgress;
+import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.*;
 import org.bukkit.generator.structure.StructureType;
@@ -898,16 +899,28 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         PrintWriter writer;
         try {
             File file = new File(getDataFolder(), "srsd/reset_seed.txt");
+            if (!file.exists()) {
+                file.getParentFile().mkdirs();
+                file.createNewFile();
+            }
             writer = new PrintWriter(file, "UTF-8");
-
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
-            System.out.println("Could not write the reset seed flag file!");
+        } catch (IOException e) {
+            getLogger().severe("Could not write the reset seed flag file!");
             e.printStackTrace();
             return;
         }
         writer.println("You should delete the world folders and reset the seed.");
         writer.close();
-        Bukkit.restart();
+        //deleteWorldFolders();
+        getServer().getScheduler().runTaskLater(this,
+                () -> {
+                    //deleteWorldFolders();
+                    //Bukkit.dispatchCommand(Bukkit.getConsoleSender(), "restart");
+                    Bukkit.restart();
+                },
+                //Bukkit::restart,
+                40
+        );
     }
 
     @Override
@@ -927,13 +940,41 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     }
 
     private void deleteWorld(File homeFolder, String worldName) {
+        Bukkit.unloadWorld(worldName, false);
         File worldFolder = new File(homeFolder, worldName);
         if (!worldFolder.exists()) return;
-        try {
+        deleteDir(worldFolder, "advancements");
+        deleteDir(worldFolder, "data");
+        deleteDir(worldFolder, "entities");
+        deleteDir(worldFolder, "poi");
+        deleteDir(worldFolder, "region");
+        deleteDir(worldFolder, "stats");
+        deleteFile(worldFolder, "level.dat");
+        deleteFile(worldFolder, "level.dat_old");
+        deleteFile(worldFolder, "paper-world.yml");
+        deleteFile(worldFolder, "session.lock");
+        /*try {
             FileUtils.cleanDirectory(worldFolder);
+            worldFolder.delete();
         } catch (IOException e) {
+            getLogger().severe("Failed to delete world folders: "+e.getMessage());
             e.printStackTrace();
+        }*/
+    }
+
+    private void deleteDir(File root, String dir) {
+        File file = new File(root, dir);
+        if (file.exists()) {
+            try {
+                FileUtils.cleanDirectory(file);
+            } catch (IOException e) {
+            }
         }
+    }
+
+    private void deleteFile(File root, String name) {
+        File file = new File(root, name);
+        if (file.exists()) file.delete();
     }
 
     public int getGameplayServerId() {
