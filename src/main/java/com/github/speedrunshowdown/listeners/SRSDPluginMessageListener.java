@@ -23,8 +23,10 @@ public class SRSDPluginMessageListener implements PluginMessageListener {
         } else if (channel.equals("srsdranked:to_gp/reset_seed")) {
             ByteArrayDataInput in = ByteStreams.newDataInput(message);
             int lobbyId = in.readInt();
+            int queueId = in.readInt();
             if (lobbyId != SpeedrunShowdown.getInstance().getGameplayServerId()) return;
             SpeedrunShowdown.getInstance().resetSeed();
+            SpeedrunShowdown.getInstance().getLeagueBotApiManager().setCurrentQueueId(queueId);
         }
     }
 }
