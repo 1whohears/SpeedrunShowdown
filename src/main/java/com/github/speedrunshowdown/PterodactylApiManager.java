@@ -7,11 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,20 +21,18 @@ public class PterodactylApiManager {
     private final SpeedrunShowdown plugin;
 
     public void restartServer() {
-        String requestUrl = getRequestURL("power")+"?signal=restart";
+        String requestUrl = getRequestURL("power");
         String jsonBody = "{\"signal\": \"restart\"}";
-        handlePostAsync(requestUrl, jsonBody, null, response -> {
-            plugin.getLogger().info(response.getAsString());
-        });
+        handlePostAsync(requestUrl, jsonBody, null, response -> {});
     }
 
-    public String getRequestURL(String type) {
+    private String getRequestURL(String type) {
         String url = plugin.getConfig().getString("pterodactyl_server_url");
         String serverId = plugin.getConfig().getString("pterodactyl_server_id");
         return url+"/api/client/servers/"+serverId+"/"+type;
     }
 
-    public void handlePostAsync(String requestURL, String jsonBody, @Nullable CommandSender sender,
+    private void handlePostAsync(String requestURL, String jsonBody, @Nullable CommandSender sender,
                                  @NotNull Consumer<JsonObject> responseHandler) {
         CompletableFuture.supplyAsync(() -> {
             try {
@@ -86,24 +79,6 @@ public class PterodactylApiManager {
             e.printStackTrace();
             return null;
         }
-    }
-
-    private static @NotNull String getBufferedReader(HttpURLConnection con) throws IOException {
-        int status = con.getResponseCode();
-        Reader streamReader = null;
-        if (status > 299) {
-            streamReader = new InputStreamReader(con.getErrorStream());
-        } else {
-            streamReader = new InputStreamReader(con.getInputStream());
-        }
-        BufferedReader in = new BufferedReader(streamReader);
-        String inputLine;
-        StringBuilder content = new StringBuilder();
-        while ((inputLine = in.readLine()) != null) {
-            content.append(inputLine);
-        }
-        in.close();
-        return content.toString();
     }
 
     public PterodactylApiManager() {

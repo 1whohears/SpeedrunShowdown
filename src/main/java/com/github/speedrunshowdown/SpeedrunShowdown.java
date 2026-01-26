@@ -4,8 +4,6 @@ import com.github.speedrunshowdown.border.WorldBorderManager;
 import com.github.speedrunshowdown.commands.*;
 import com.github.speedrunshowdown.gui.ScoreboardManager;
 import com.github.speedrunshowdown.listeners.*;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.*;
 import org.bukkit.World.Environment;
@@ -52,6 +50,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private RespawnFixerManager respawnFixerManager;
     private LeagueBotApiManager leagueBotApiManager;
     private PterodactylApiManager pterodactylApiManager;
+    private InternalApiServer internalApiManager;
 
     private Material[] randomItems = Constants.ITEMS.clone();
 
@@ -106,10 +105,6 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         getServer().getPluginManager().registerEvents(new EntityDeathListener(), this);
         getServer().getPluginManager().registerEvents(new SetSpawnListener(), this);
         getServer().getPluginManager().registerEvents(new PlaceBlockListener(), this);
-        SRSDPluginMessageListener pml = new SRSDPluginMessageListener();
-        getServer().getMessenger().registerIncomingPluginChannel(this, "srsdranked:to_gp/reset_seed", pml);
-        getServer().getMessenger().registerIncomingPluginChannel(this, "srsdranked:to_gp/set_queue", pml);
-        getServer().getMessenger().registerOutgoingPluginChannel(this, "srsdranked:from_gp/status");
 
         // Create managers
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
@@ -119,6 +114,13 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             respawnFixerManager = new RespawnFixerManager();
             leagueBotApiManager = new LeagueBotApiManager();
             pterodactylApiManager = new PterodactylApiManager();
+            internalApiManager = new InternalApiServer();
+            try {
+                internalApiManager.start();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+            internalApiManager.sendStatus("READY");
             getOverworld().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheNether().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheEnd().setGameRule(GameRules.LOCATOR_BAR, false);
@@ -139,10 +141,6 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 getServer().getServerTickManager().setFrozen(false);
             }
         }, 20, 20);
-
-        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
-        bado.writeUTF("READY");
-        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
     }
 
     @Override
@@ -413,9 +411,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             ));
         }
 
-        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
-        bado.writeUTF("IN_PROGRESS");
-        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
+        internalApiManager.sendStatus("IN_PROGRESS");
     }
 
     public void resume(int minutes, int seconds) {
@@ -454,9 +450,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             }
         }
 
-        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
-        bado.writeUTF("IN_PROGRESS");
-        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
+        internalApiManager.sendStatus("IN_PROGRESS");
     }
 
     public void stop() {
@@ -731,9 +725,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         if (team != null) leagueBotApiManager.reportMatch(team.getName(), 100, 0);
         gameEnded = true;
 
-        ByteArrayDataOutput bado = ByteStreams.newDataOutput();
-        bado.writeUTF("FINISHED");
-        getServer().sendPluginMessage(this, "srsdranked:from_gp/status", bado.toByteArray());
+        internalApiManager.sendStatus("FINISHED");
     }
 
     public void randomize() {
@@ -905,9 +897,10 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         }
         writer.println("You should delete the world folders and reset the seed.");
         writer.close();
-        getServer().getScheduler().runTaskLater(this,
-                () -> pterodactylApiManager.restartServer(),
-                50
+        getServer().getScheduler().runTaskLater(this, () -> {
+            pterodactylApiManager.restartServer();
+            internalApiManager.sendStatus("RESETTING_SEED");
+            }, 50
         );
     }
 
@@ -982,5 +975,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public int getGameplayServerId() {
         return getConfig().getInt("gameplay_server_id", -1);
+    }
+
+    public InternalApiServer getInternalApiManager() {
+        return internalApiManager;
     }
 }

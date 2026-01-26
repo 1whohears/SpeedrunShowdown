@@ -54,3 +54,6 @@ gameplay_server_id: -1
 pterodactyl_api_key: ptlc_bruh
 pterodactyl_server_id: bruh
 pterodactyl_server_url: bruh.com
+velocity_ip: http://0.0.0.0
+velocity_port: 24455
+gameplay_server_api_port: 24456
