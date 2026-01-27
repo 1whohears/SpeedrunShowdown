@@ -935,15 +935,15 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     private void deleteWorldFolders() {
         File homeFolder = getServer().getWorldContainer();
-        deleteWorld(homeFolder, getOverworldWorldName());
-        deleteWorld(homeFolder, getTheNetherWorldName());
-        deleteWorld(homeFolder, getTheEndWorldName());
+        deletePartialWorld(homeFolder, getOverworldWorldName());
+        deleteEntireWorld(homeFolder, getTheNetherWorldName());
+        deleteEntireWorld(homeFolder, getTheEndWorldName());
     }
 
-    private static void deleteWorld(File homeFolder, String worldName) {
+    private static void deletePartialWorld(File homeFolder, String worldName) {
+        Bukkit.unloadWorld(worldName, false);
         File worldFolder = new File(homeFolder, worldName);
         if (!worldFolder.exists()) return;
-        Bukkit.unloadWorld(worldName, false);
         deleteDir(worldFolder, "advancements");
         deleteDir(worldFolder, "data");
         deleteDir(worldFolder, "playerdata");
@@ -955,6 +955,11 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         deleteFile(worldFolder, "level.dat_old");
         deleteFile(worldFolder, "paper-world.yml");
         deleteFile(worldFolder, "session.lock");
+    }
+
+    private static void deleteEntireWorld(File homeFolder, String worldName) {
+        Bukkit.unloadWorld(worldName, false);
+        deleteDir(homeFolder, worldName);
     }
 
     private static void deleteDir(File root, String dir) {
