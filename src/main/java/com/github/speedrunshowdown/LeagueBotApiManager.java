@@ -443,6 +443,7 @@ public class LeagueBotApiManager {
                 if (sender != null) sender.sendMessage(msg);
                 else SpeedrunShowdown.getInstance().getServer().broadcastMessage(msg);
             });
+            SpeedrunShowdown.getInstance().getLogger().severe(requestURL+" | "+e.getMessage());
             e.printStackTrace();
             return null;
         }
