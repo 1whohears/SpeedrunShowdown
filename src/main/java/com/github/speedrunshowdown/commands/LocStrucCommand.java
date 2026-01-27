@@ -95,7 +95,7 @@ public class LocStrucCommand implements CommandExecutor {
         return result;
     }
     public static boolean checkInWorldBorder(Location location) {
-        return checkInRange(location, WorldBorderManager.NETHER_BORDER_SIZE / 2);
+        return checkInRange(location, 400);
     }
     public static boolean checkInRange(Location location, int radius) {
         return location.getX() < radius && location.getX() > -radius &&
