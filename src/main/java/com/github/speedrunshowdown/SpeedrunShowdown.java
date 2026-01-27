@@ -119,7 +119,6 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-            internalApiManager.sendStatus("READY");
             prevApiUpdateTime = System.currentTimeMillis();
             getOverworld().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheNether().setGameRule(GameRules.LOCATOR_BAR, false);
@@ -146,6 +145,17 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 prevApiUpdateTime = System.currentTimeMillis();
             }
         }, 20, 20);
+        Bukkit.getScheduler().runTaskLater(this, () -> {
+            if (StartCommand.verifyNetherStructures()) {
+                internalApiManager.sendStatus("READY");
+                getServer().broadcastMessage(ChatColor.GREEN
+                        +"The Nether has at least 1 Fortress and at least 1 Bastion inside the world border!");
+            } else {
+                getServer().broadcastMessage(ChatColor.LIGHT_PURPLE
+                        +"The Nether is missing a required Structure! Resetting the seed!");
+                getInternalApiManager().sendResetRequest();
+            }
+        }, 20);
     }
 
     @Override
