@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.generator.structure.StructureType;
 import org.bukkit.util.StructureSearchResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class StartCommand implements CommandExecutor {
     @Override
@@ -54,10 +55,10 @@ public class StartCommand implements CommandExecutor {
         return result != null;
     }
 
-    public void startCountdown(CommandSender sender) {
+    public static void startCountdown(@Nullable CommandSender sender) {
         SpeedrunShowdown plugin = SpeedrunShowdown.getInstance();
 
-        sender.sendMessage(ChatColor.GREEN + "Countdown started!");
+        if (sender != null) sender.sendMessage(ChatColor.GREEN + "Countdown started!");
         sendStartingTimerTile(ChatColor.YELLOW + "Game starting soon...", false);
 
         int countdownTime = plugin.getConfig().getInt("countdown-time");
@@ -77,7 +78,7 @@ public class StartCommand implements CommandExecutor {
         }
     }
 
-    public void sendStartingTimerTile(String subtitle, boolean higherDing) {
+    public static void sendStartingTimerTile(String subtitle, boolean higherDing) {
         float pitch = 1;
         if (higherDing) {
             pitch = 2;

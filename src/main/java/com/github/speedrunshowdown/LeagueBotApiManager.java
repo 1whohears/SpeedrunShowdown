@@ -1,5 +1,6 @@
 package com.github.speedrunshowdown;
 
+import com.github.speedrunshowdown.commands.StartCommand;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -22,6 +23,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -79,8 +81,7 @@ public class LeagueBotApiManager {
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                     }
                     setCurrentSetParameters(currentSetId, player1UUID, player2UUID, team1Name, team2Name);
-                    Bukkit.getScheduler().runTaskLater(plugin, plugin::start, 200);
-                    // TODO count down doesn't happen
+                    Bukkit.getScheduler().runTaskLater(plugin, () -> StartCommand.startCountdown(null), 200);
                 });
             }
         }
@@ -112,8 +113,9 @@ public class LeagueBotApiManager {
         JsonObject extraData = userData.getAsJsonObject("extra_data");
         if (extraData.has("mcUUID")) {
             String uuid = extraData.get("mcUUID").getAsString();
-            mcTeam.addEntry(uuid);
-            // TODO adding players to team this way doesn't work
+            Player player = plugin.getServer().getPlayer(UUID.fromString(uuid));
+            if (player == null) return null;
+            mcTeam.addEntity(player);
             return uuid;
         }
         return null;
