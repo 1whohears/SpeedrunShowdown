@@ -71,6 +71,7 @@ public class LeagueBotApiManager {
                     String player2UUID = handleContestantResponse(team2Name, con2Data);
                     if (player1UUID == null || player2UUID == null) {
                         plugin.getServer().broadcastMessage(ChatColor.RED+"Could not start match because " +
+                                "not all players are online, or " +
                                 "there is a player that does not have a linked discord account!");
                         return;
                     }
