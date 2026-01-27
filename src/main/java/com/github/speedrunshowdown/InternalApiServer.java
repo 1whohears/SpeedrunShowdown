@@ -1,5 +1,6 @@
 package com.github.speedrunshowdown;
 
+import com.github.speedrunshowdown.commands.StartCommand;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.sun.net.httpserver.HttpExchange;
@@ -37,6 +38,13 @@ public class InternalApiServer {
                 response -> plugin.getLogger().info("Sent Status "+status));
     }
 
+    public void sendResetRequest() {
+        String url = getRequestURL("reset_seed");
+        String jsonBody = "{\"gameId\":\""+plugin.getGameplayServerId()+"\"}";
+        handlePostAsync(url, jsonBody, null,
+                response -> plugin.getLogger().info("Sent Reset Request"));
+    }
+
     public InternalApiServer() {
         this.plugin = SpeedrunShowdown.getInstance();
     }
@@ -46,8 +54,8 @@ public class InternalApiServer {
 
         server = HttpServer.create(new InetSocketAddress(port), 0);
 
-        server.createContext("/seed_reset", this::handleReset);
         server.createContext("/ping", this::handlePing);
+        server.createContext("/seed_reset", this::handleReset);
         server.createContext("/set_queue", this::handleSetQueue);
 
         server.setExecutor(null);
@@ -107,6 +115,16 @@ public class InternalApiServer {
         int queueId = response.get("queueId").getAsInt();
 
         Bukkit.getScheduler().runTask(plugin, () -> plugin.getLeagueBotApiManager().setCurrentQueueId(queueId));
+        Bukkit.getScheduler().runTaskLater(plugin, () -> {
+            if (StartCommand.verifyNetherStructures()) {
+                plugin.getServer().broadcastMessage(ChatColor.GREEN
+                        +"The Nether has at least 1 Fortress and at least 1 Bastion inside the world border!");
+            } else {
+                plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE
+                        +"The Nether is missing a required Structure! Resetting the seed!");
+                plugin.getInternalApiManager().sendResetRequest();
+            }
+        }, 20);
 
         plugin.getLogger().info("Queue ID has Been set to "+queueId);
 

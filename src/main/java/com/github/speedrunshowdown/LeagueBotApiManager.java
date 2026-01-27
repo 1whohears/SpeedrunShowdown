@@ -79,7 +79,8 @@ public class LeagueBotApiManager {
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                     }
                     setCurrentSetParameters(currentSetId, player1UUID, player2UUID, team1Name, team2Name);
-                    Bukkit.getScheduler().runTaskLater(plugin, plugin::start, 100);
+                    Bukkit.getScheduler().runTaskLater(plugin, plugin::start, 200);
+                    // TODO count down doesn't happen
                 });
             }
         }
@@ -112,6 +113,8 @@ public class LeagueBotApiManager {
         if (extraData.has("mcUUID")) {
             String uuid = extraData.get("mcUUID").getAsString();
             mcTeam.addEntry(uuid);
+            // TODO adding players to team this way doesn't work
+            return uuid;
         }
         return null;
     }

@@ -83,7 +83,6 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             commands.registrar().register(LinkDiscordCommand.get());
             commands.registrar().register(AutoTeamMatchCommand.get());
             commands.registrar().register(InGameTeamMatchCommand.get());
-            // TODO create veto command
         });
 
         // Create listeners
@@ -121,6 +120,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 throw new RuntimeException(e);
             }
             internalApiManager.sendStatus("READY");
+            prevApiUpdateTime = System.currentTimeMillis();
             getOverworld().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheNether().setGameRule(GameRules.LOCATOR_BAR, false);
             getTheEnd().setGameRule(GameRules.LOCATOR_BAR, false);
@@ -139,6 +139,11 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 getServer().getServerTickManager().setFrozen(true);
             } else {
                 getServer().getServerTickManager().setFrozen(false);
+            }
+            long timeDiff = System.currentTimeMillis() - prevApiUpdateTime;
+            if (!running && timeDiff > 10000) {
+                getLeagueBotApiManager().queueUpdate();
+                prevApiUpdateTime = System.currentTimeMillis();
             }
         }, 20, 20);
     }
@@ -237,12 +242,6 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         // If plugin should give permanent potions, give permanent potions
         if (getConfig().getBoolean("permanent-potions")) {
             permanentPotions();
-        }
-
-        long timeDiff = System.currentTimeMillis() - prevApiUpdateTime;
-        if (!running && timeDiff > 10000) {
-            getLeagueBotApiManager().queueUpdate();
-            prevApiUpdateTime = System.currentTimeMillis();
         }
 
         getRespawnFixerManager().tick();
@@ -898,9 +897,9 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         writer.println("You should delete the world folders and reset the seed.");
         writer.close();
         getServer().getScheduler().runTaskLater(this, () -> {
-            pterodactylApiManager.restartServer();
             internalApiManager.sendStatus("RESETTING_SEED");
-            }, 50
+            pterodactylApiManager.restartServer();
+            }, 30
         );
     }
 
