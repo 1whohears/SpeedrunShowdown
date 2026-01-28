@@ -151,6 +151,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 getServer().broadcastMessage(ChatColor.GREEN
                         +"The Nether has at least 1 Fortress and at least 1 Bastion inside the world border!");
             } else {
+                internalApiManager.sendStatus("RESETTING_SEED");
                 getServer().broadcastMessage(ChatColor.LIGHT_PURPLE
                         +"The Nether is missing a required Structure! Resetting the seed!");
                 getInternalApiManager().sendResetRequest();
