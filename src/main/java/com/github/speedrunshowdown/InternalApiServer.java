@@ -57,6 +57,7 @@ public class InternalApiServer {
         server.createContext("/ping", this::handlePing);
         server.createContext("/seed_reset", this::handleReset);
         server.createContext("/set_queue", this::handleSetQueue);
+        server.createContext("/cancel_set", this::handleCancelSet);
 
         server.setExecutor(null);
         server.start();
@@ -68,16 +69,32 @@ public class InternalApiServer {
         reply(ex, 200, "game server "+plugin.getGameplayServerId()+" ok");
     }
 
-    private void handleReset(HttpExchange ex) throws IOException {
-        //plugin.getLogger().info("received seed_reset "+ex.getRequestHeaders().toString());
+    private void handleCancelSet(HttpExchange ex) throws IOException {
         String key = ex.getRequestHeaders().getFirst("X-Auth");
         if (!key.equals(plugin.getConfig().getString("pterodactyl_api_key"))) {
-            //plugin.getLogger().warning("Reset Failed Cause Bad Key "+key);
             ex.sendResponseHeaders(401, -1);
             return;
         }
         if (!ex.getRequestMethod().equalsIgnoreCase("POST")) {
-            //plugin.getLogger().warning("Reset Failed Cause Not POST");
+            ex.sendResponseHeaders(405, -1);
+            return;
+        }
+
+        Bukkit.getScheduler().runTask(plugin, () -> {
+            plugin.getLeagueBotApiManager().setCurrentQueueId(-1);
+            plugin.getLeagueBotApiManager().setCurrentSetParameters(-1, "", "", "", "");
+        });
+
+        reply(ex, 200, "{\"result\":\"Canceling Set\"}");
+    }
+
+    private void handleReset(HttpExchange ex) throws IOException {
+        String key = ex.getRequestHeaders().getFirst("X-Auth");
+        if (!key.equals(plugin.getConfig().getString("pterodactyl_api_key"))) {
+            ex.sendResponseHeaders(401, -1);
+            return;
+        }
+        if (!ex.getRequestMethod().equalsIgnoreCase("POST")) {
             ex.sendResponseHeaders(405, -1);
             return;
         }
