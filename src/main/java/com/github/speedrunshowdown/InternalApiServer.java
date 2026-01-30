@@ -82,6 +82,7 @@ public class InternalApiServer {
         Bukkit.getScheduler().runTask(plugin, () -> {
             plugin.getLeagueBotApiManager().setCurrentQueueId(-1);
             plugin.getLeagueBotApiManager().setCurrentSetParameters(-1, "", "", "", "");
+            plugin.getServer().broadcastMessage(ChatColor.RED+"The proxy canceled this match!");
         });
 
         reply(ex, 200, "{\"result\":\"Canceling Set\"}");
