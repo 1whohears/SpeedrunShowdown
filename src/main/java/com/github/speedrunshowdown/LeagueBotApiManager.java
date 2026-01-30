@@ -180,7 +180,7 @@ public class LeagueBotApiManager {
             score2 = winningScore;
         } else {
             plugin.getServer().broadcastMessage(ChatColor.RED
-                    +"Failed to report a match. This team was not registered in match "+setId);
+                    +"Failed to report a match. This team "+winningTeamName+" was not registered in match "+setId);
             return false;
         }
 
