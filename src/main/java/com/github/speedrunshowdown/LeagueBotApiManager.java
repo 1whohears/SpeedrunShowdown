@@ -476,8 +476,6 @@ public class LeagueBotApiManager {
 
     public boolean setCurrentSetParameters(int id, String player1UUID, String player2UUID,
                                            String player1Team, String player2Team) {
-        if (plugin.isRunning()) return false;
-        if (currentQueueId != -1) return false;
         this.currentSetId = id;
         this.player1UUID = player1UUID;
         this.player2UUID = player2UUID;
