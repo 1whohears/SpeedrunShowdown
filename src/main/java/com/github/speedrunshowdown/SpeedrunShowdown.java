@@ -169,10 +169,15 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     public void run() {
         // Check if any players in survival are in the end
         boolean playerInEnd = false;
+        boolean checkSpectator = running && !gameEnded && getLeagueBotApiManager().getCurrentSetId() != -1;
         for (Player player : getServer().getOnlinePlayers()) {
             if (player.getGameMode() == GameMode.SURVIVAL &&
                     player.getLocation().getWorld().getEnvironment() == Environment.THE_END) {
                 playerInEnd = true;
+            }
+            if (checkSpectator && player.getGameMode() != GameMode.CREATIVE &&
+                    getServer().getScoreboardManager().getMainScoreboard().getEntityTeam(player) == null) {
+                player.setGameMode(GameMode.SPECTATOR);
             }
         }
 
