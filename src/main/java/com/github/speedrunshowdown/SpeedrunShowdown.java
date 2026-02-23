@@ -120,9 +120,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 throw new RuntimeException(e);
             }
             prevApiUpdateTime = System.currentTimeMillis();
-            getOverworld().setGameRule(GameRules.LOCATOR_BAR, false);
-            getTheNether().setGameRule(GameRules.LOCATOR_BAR, false);
-            getTheEnd().setGameRule(GameRules.LOCATOR_BAR, false);
+            setGameRule(GameRules.LOCATOR_BAR, false);
+            setGameRule(GameRules.SPECTATORS_GENERATE_CHUNKS, false);
         });
         getServer().getScheduler().scheduleSyncRepeatingTask(this, () -> {
             // Set player gamemode to adventure if the game hasn't started yet
@@ -157,6 +156,12 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 getInternalApiManager().sendResetRequest();
             }
         }, 20);
+    }
+
+    public void setGameRule(GameRule<Boolean> rule, boolean value) {
+        getOverworld().setGameRule(rule, value);
+        getTheNether().setGameRule(rule, value);
+        getTheEnd().setGameRule(rule, value);
     }
 
     @Override
