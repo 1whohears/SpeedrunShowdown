@@ -593,7 +593,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             Team randomTeam = livingTeams.get(ThreadLocalRandom.current().nextInt(livingTeams.size()));
             randomTeam.addEntity(player);
         }
-        start();
+        StartCommand.startCountdown(null);
     }
 
     public List<Team> getLivingTeams() {
