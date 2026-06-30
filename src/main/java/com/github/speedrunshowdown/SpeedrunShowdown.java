@@ -597,6 +597,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             randomTeam.addEntity(player);
         }
         StartCommand.startCountdown(null);
+        leagueBotApiManager.setCurrentQueueId(-1);
     }
 
     public List<Team> getLivingTeams() {

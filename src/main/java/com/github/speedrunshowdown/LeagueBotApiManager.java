@@ -59,34 +59,35 @@ public class LeagueBotApiManager {
         JsonObject queueData = response.getAsJsonObject("queue");
         QueueState queueState = readQueueState(queueData.get("queueState").getAsString());
         plugin.getLeagueBotApiManager().queueState = queueState;
-        if (queueState == QueueState.CLOSED) {
-            if (currentSetId == -1) {
-                currentSetId = queueData.get("resolvedSetId").getAsInt();
-                handleSetResponse(res -> {
-                    JsonObject con1Data = res.getAsJsonObject("contestant1");
-                    JsonObject con2Data = res.getAsJsonObject("contestant2");
-                    String team1Name = randomTeam(null);
-                    String team2Name = randomTeam(team1Name);
-                    String player1UUID = handleContestantResponse(team1Name, con1Data);
-                    String player2UUID = handleContestantResponse(team2Name, con2Data);
-                    if (player1UUID == null || player2UUID == null) {
-                        plugin.getServer().broadcastMessage(ChatColor.RED+"Could not start match because " +
-                                "not all players are online, or " +
-                                "there is a player that does not have a linked discord account!");
-                        return;
-                    }
-                    plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "Set " + currentSetId
-                            + " | " + team1Name + " vs " + team2Name
-                            + " | has been created and will begin shortly!");
-                    for (Player player : plugin.getServer().getOnlinePlayers()) {
-                        player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
-                    }
-                    setCurrentSetParameters(currentSetId, player1UUID, player2UUID, team1Name, team2Name);
-                    Bukkit.getScheduler().runTaskLater(plugin, () -> StartCommand.startCountdown(null), 200);
-                });
-            }
-        }
+        if (queueState == QueueState.CLOSED) handleClosed(queueData);
     };
+
+    private void handleClosed(JsonObject queueData) {
+        if (currentSetId == -1) currentSetId = queueData.get("resolvedSetId").getAsInt();
+        if (currentSetId == -1) return;
+        handleSetResponse(res -> {
+            JsonObject con1Data = res.getAsJsonObject("contestant1");
+            JsonObject con2Data = res.getAsJsonObject("contestant2");
+            String team1Name = randomTeam(null);
+            String team2Name = randomTeam(team1Name);
+            String player1UUID = handleContestantResponse(team1Name, con1Data);
+            String player2UUID = handleContestantResponse(team2Name, con2Data);
+            if (player1UUID == null || player2UUID == null) {
+                plugin.getServer().broadcastMessage(ChatColor.RED+"Could not start match because " +
+                        "not all players are online, or " +
+                        "there is a player that does not have a linked discord account!");
+                return;
+            }
+            plugin.getServer().broadcastMessage(ChatColor.LIGHT_PURPLE + "Set " + currentSetId
+                    + " | " + team1Name + " vs " + team2Name
+                    + " | has been created and will begin shortly!");
+            for (Player player : plugin.getServer().getOnlinePlayers()) {
+                player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+            }
+            setCurrentSetParameters(currentSetId, player1UUID, player2UUID, team1Name, team2Name);
+            Bukkit.getScheduler().runTaskLater(plugin, () -> StartCommand.startCountdown(null), 200);
+        });
+    }
 
     @Nullable
     private String handleContestantResponse(String mcTeamName, JsonObject conData) {
