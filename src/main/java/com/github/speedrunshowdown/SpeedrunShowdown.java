@@ -573,9 +573,11 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
 
     public void startCasualMatch() {
         Scoreboard scoreboard = getServer().getScoreboardManager().getMainScoreboard();
-        for (Player player : getServer().getOnlinePlayers()) {
+        Collection<? extends Player> players = getServer().getOnlinePlayers();
+        int minTeamNum = players.size() == 3 ? 3 : 2;
+        for (Player player : players) {
             List<Team> livingTeams = getLivingTeams();
-            if (livingTeams.size() < 2) {
+            if (livingTeams.size() < minTeamNum) {
                 Team team;
                 if (livingTeams.isEmpty()) {
                     String teamName = LeagueBotApiManager.randomTeam(null);
