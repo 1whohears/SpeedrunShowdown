@@ -590,8 +590,8 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
                 team.addEntity(player);
                 continue;
             }
-            int smallestSize = livingTeams.stream().mapToInt(Team::getSize).min().orElse(0);
-            livingTeams.removeIf(team -> team.getSize() != smallestSize);
+            int smallestSize = livingTeams.stream().mapToInt(team -> team.getEntries().size()).min().orElse(0);
+            livingTeams.removeIf(team -> team.getEntries().size() != smallestSize);
             Team randomTeam = livingTeams.get(ThreadLocalRandom.current().nextInt(livingTeams.size()));
             randomTeam.addEntity(player);
         }
@@ -601,7 +601,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     public List<Team> getLivingTeams() {
         List<Team> teams = new ArrayList<>();
         for (Team team : getScoreboardManager().getScoreboard().getTeams()) {
-            if (team.getSize() == 0) continue;
+            if (team.getEntries().isEmpty()) continue;
             for (String entry : team.getEntries()) {
                 Player player = getServer().getPlayer(entry);
                 if (player != null && player.getGameMode() == GameMode.SURVIVAL) {
