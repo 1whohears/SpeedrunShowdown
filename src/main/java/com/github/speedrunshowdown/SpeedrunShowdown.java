@@ -576,6 +576,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         Collection<? extends Player> players = getServer().getOnlinePlayers();
         int minTeamNum = players.size() == 3 ? 3 : 2;
         for (Player player : players) {
+            if (scoreboard.getEntityTeam(player) != null) continue;
             List<Team> livingTeams = getLivingTeams();
             if (livingTeams.size() < minTeamNum) {
                 Team team;
@@ -604,7 +605,7 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
             if (team.getEntries().isEmpty()) continue;
             for (String entry : team.getEntries()) {
                 Player player = getServer().getPlayer(entry);
-                if (player != null && player.getGameMode() == GameMode.SURVIVAL) {
+                if (player != null && (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE)) {
                     teams.add(team);
                     break;
                 }
