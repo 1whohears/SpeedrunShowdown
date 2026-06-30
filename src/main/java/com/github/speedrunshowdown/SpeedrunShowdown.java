@@ -20,10 +20,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import org.bukkit.scoreboard.Criteria;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Score;
-import org.bukkit.scoreboard.Team;
+import org.bukkit.scoreboard.*;
 import org.codehaus.plexus.util.FileUtils;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,6 +30,7 @@ import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class SpeedrunShowdown extends JavaPlugin implements Runnable {
     private boolean running = false;
@@ -571,6 +569,31 @@ public class SpeedrunShowdown extends JavaPlugin implements Runnable {
         if (most > secondMost + suddenDeathPoints && mostTeam != null) {
             win(mostTeam, "Forced because "+most+" Progression Points!");
         }
+    }
+
+    public void startCasualMatch() {
+        Scoreboard scoreboard = getServer().getScoreboardManager().getMainScoreboard();
+        for (Player player : getServer().getOnlinePlayers()) {
+            List<Team> livingTeams = getLivingTeams();
+            if (livingTeams.size() < 2) {
+                Team team;
+                if (livingTeams.isEmpty()) {
+                    String teamName = LeagueBotApiManager.randomTeam(null);
+                    team = scoreboard.getTeam(teamName);
+                } else {
+                    String teamName = LeagueBotApiManager.randomTeam(livingTeams.get(0).getName());
+                    team = scoreboard.getTeam(teamName);
+                }
+                assert team != null;
+                team.addEntity(player);
+                continue;
+            }
+            int smallestSize = livingTeams.stream().mapToInt(Team::getSize).min().orElse(0);
+            livingTeams.removeIf(team -> team.getSize() != smallestSize);
+            Team randomTeam = livingTeams.get(ThreadLocalRandom.current().nextInt(livingTeams.size()));
+            randomTeam.addEntity(player);
+        }
+        start();
     }
 
     public List<Team> getLivingTeams() {

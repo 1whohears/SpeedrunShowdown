@@ -57,6 +57,7 @@ public class InternalApiServer {
         server.createContext("/seed_reset", this::handleReset);
         server.createContext("/set_queue", this::handleSetQueue);
         server.createContext("/cancel_set", this::handleCancelSet);
+        server.createContext("/start_casual_match", this::handleStartCasualMatch);
 
         server.setExecutor(null);
         server.start();
@@ -67,6 +68,23 @@ public class InternalApiServer {
     private void handlePing(HttpExchange ex) throws IOException {
         reply(ex, 200, "game server "+plugin.getGameplayServerId()+" ok");
     }
+
+    private void handleStartCasualMatch(HttpExchange ex) throws IOException {
+        String key = ex.getRequestHeaders().getFirst("X-Auth");
+        if (!key.equals(plugin.getConfig().getString("pterodactyl_api_key"))) {
+            ex.sendResponseHeaders(401, -1);
+            return;
+        }
+        if (!ex.getRequestMethod().equalsIgnoreCase("POST")) {
+            ex.sendResponseHeaders(405, -1);
+            return;
+        }
+
+        Bukkit.getScheduler().runTask(plugin, plugin::startCasualMatch);
+
+        reply(ex, 200, "{\"result\":\"Starting Casual Match...\"}");
+    }
+
 
     private void handleCancelSet(HttpExchange ex) throws IOException {
         String key = ex.getRequestHeaders().getFirst("X-Auth");
